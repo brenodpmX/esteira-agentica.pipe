@@ -85,7 +85,7 @@ agents:
 
 boards:
   platform: github
-  rerun_cooldown: 300
+  rerun_cooldown: 1800
 
   epic:
     name: "Pipe - Epics"
