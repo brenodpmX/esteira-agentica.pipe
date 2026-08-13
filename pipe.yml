@@ -331,7 +331,7 @@ boards:
           advance: desenvolvimento
       desenvolvimento:
         name: "Desenvolvimento"
-        agent: engineering-jr
+        agent: engineering-pl
         override-agent:
           low: engineering-jr
           middle: engineering-pl
