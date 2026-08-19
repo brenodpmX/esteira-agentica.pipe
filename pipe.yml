@@ -7,7 +7,7 @@ log:
 
 git:
   repo:
-    main: git@github.com:brenotmp-agent/pipe.git
+    main: git@github.com:brenodpmX/esteira-agentica.git
 
   flow:
     base: main
