@@ -289,7 +289,7 @@ boards:
         name: "Casos de Teste"
         agent: quality
         gitevents: create
-        target-prompt: "Analisar a issue;\n- Avaliar os casos de testes já existente;\n- Criar/Alterar os casos de teste para o serviço.\n\nAtenção: faça exclusivamente o que foi pedido.\n\nCaso a issue gere alguma dúvida:\n- Se for algo simples pergunte via chat e adicione a label 'need_human';\n- Se for uma dúvida complexa ou uma definição ausente, crie uma issue no board 'Débito' na coluna que representa o agente que sanará a dúvida e bloqueie a issue corrente com o débito."
+        target-prompt: "Analisar a issue;\n- Avaliar os casos de testes já existente;\n- Criar/Alterar os casos de teste para o serviço, seguindo o template `.kiro/templates/docs/test-cases.md`.\n\nAtenção: faça exclusivamente o que foi pedido.\n\nCaso a issue gere alguma dúvida:\n- Se for algo simples pergunte via chat e adicione a label 'need_human';\n- Se for uma dúvida complexa ou uma definição ausente, crie uma issue no board 'Débito' seguindo o template `.kiro/templates/issues/debito.md`, na coluna que representa o agente que sanará a dúvida, e bloqueie a issue corrente com o débito."
         change:
           advance: desenvolvimento
       desenvolvimento:
@@ -308,7 +308,7 @@ boards:
         name: "Execução de Testes"
         agent: quality
         gitevents: use
-        target-prompt: "- Listar casos de testes referente ao desenvolvimento;\n- Se houver alguma dúvida ou ambiguidade nos casos de teste, devolva a task para a coluna de criação de casos de teste, avançando para revisar-casos-de-teste.\n- Executar casos de teste;\n- Registrar resultados;\n- Se sucesso: avançar para advance;\nSe for reprovado ou parcialmente reprovado: avançar para falha.\n\nImportante: Não altera código, não cria nem altera caso de teste."
+        target-prompt: "- Listar casos de testes referente ao desenvolvimento;\n- Se houver alguma dúvida ou ambiguidade nos casos de teste, devolva a task para a coluna de criação de casos de teste, avançando para revisar-casos-de-teste.\n- Executar casos de teste;\n- Registrar resultados seguindo o template `.kiro/templates/docs/test-results.md`;\n- Se sucesso: avançar para advance;\nSe for reprovado ou parcialmente reprovado: avançar para falha.\n\nImportante: Não altera código, não cria nem altera caso de teste."
         change:
           advance: merge-request
           falha: desenvolvimento
@@ -371,7 +371,7 @@ boards:
       reteste:
         name: "Reteste"
         agent: quality
-        target-prompt: "Na branch de correção (/branch), reexecute os casos de teste e valide que o bug foi corrigido sem regressão. Aprovado: avance para advance. Reprovado: avance para falha."
+        target-prompt: "Na branch de correção (/branch), reexecute os casos de teste e valide que o bug foi corrigido sem regressão. Registre os resultados seguindo o template `.kiro/templates/docs/test-results.md`. Aprovado: avance para advance. Reprovado: avance para falha."
         change:
           advance: merge-request
           falha: correcao
