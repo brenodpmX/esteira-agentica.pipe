@@ -123,7 +123,7 @@ boards:
         name: "Prototipação"
         agent: ux
         gitevents: use
-        target-prompt: "A partir da documentação já criada, entreviste o humano (utilizando o history e addcomment da issue) tentando entender ao máximo a ideia que ele tem em mente. Quando não houver mais lacunas, crie as documentações, protótipos e o que mais for de sua responsabilidade. Nunca simule uma entrevista, o humano está a sua inteira disposição."
+        target-prompt: "A partir da documentação já criada, entreviste o humano (utilizando o history e addcomment da issue) tentando entender ao máximo a ideia que ele tem em mente. Quando não houver mais lacunas, crie as documentações, protótipos e o que mais for de sua responsabilidade. Baseie os artefatos nos templates em `.kiro/templates/docs/` (navigation-flow.md, prototype.md). Nunca simule uma entrevista, o humano está a sua inteira disposição."
         change:
           advance: validacao-prototipo
       validacao-prototipo:
