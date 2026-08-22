@@ -575,7 +575,7 @@ boards:
       publicacao:
         name: "Publicação"
         agent: devops
-        target-prompt: "Publicar em produção conforme runbook, atualizar variáveis e executar deploy."
+        target-prompt: "Publicar em produção conforme runbook, atualizar variáveis e executar deploy. Documente a publicação seguindo o template `.kiro/templates/docs/release-notes.md`."
         change:
           advance: concluido
       concluido:
