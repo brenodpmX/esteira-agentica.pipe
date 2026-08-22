@@ -145,7 +145,7 @@ boards:
         name: "Criação de User Stories"
         agent: tech-lead
         gitevents: use
-        target-prompt: "A partir da documentação aprovada, divida o épico em use stories, crie primeiro a documentação de cada use story e em seguida crie APENAS no board 'story' a issue relacionada."
+        target-prompt: "A partir da documentação aprovada, divida o épico em use stories, crie primeiro a documentação de cada use story e em seguida crie APENAS no board 'story' a issue relacionada. Baseie documentação e issue no template `.kiro/templates/issues/user-story.md`."
         change:
           advance: aguardando-stories
       aguardando-stories:
@@ -220,7 +220,7 @@ boards:
         name: "Planejamento Técnico"
         agent: tech-lead
         gitevents: use
-        target-prompt: "A partir das documentações negocial, prototipação e arquitetural, precisamos elaborar um plano de execução e a divisão de tarefas.\n- Crie as issues de desenvolvimento SOMENTE no board Task;\n- Cada task precisa ser entregável e testável; O texto da issue precisa ser o mais esclarecedor possível (para uma IA executar);\n- Crie as issues na ordem em que elas precisam ser executadas respeitando os bloqueios entre elas."
+        target-prompt: "A partir das documentações negocial, prototipação e arquitetural, precisamos elaborar um plano de execução e a divisão de tarefas.\n- Crie as issues de desenvolvimento SOMENTE no board Task, seguindo o template `.kiro/templates/issues/task.md`;\n- Cada task precisa ser entregável e testável; O texto da issue precisa ser o mais esclarecedor possível (para uma IA executar);\n- Crie as issues na ordem em que elas precisam ser executadas respeitando os bloqueios entre elas."
         change:
           advance: aguardando-tasks
       aguardando-tasks:
@@ -509,7 +509,7 @@ boards:
         name: "Decisão de tratamento"
         agent: tech-lead
         gitevents: use
-        target-prompt: "# Análise Final\n\n> Importante: esta etapa não executa a decisão, apenas define, outro agente terá a responsabilidade de executar tudo que esta aqui decidir.\n\n- Avaliar as análise anteriores;\n- Ler documentações, especificações e regras (levar em consideração tanto as documentações internas, quanto as externas)\n\n\n# Decisão de tratamento\n\nA partir das análises anteriores, decidir se o caminho a ser tomado será:\n\n- Opção 1: Entender que ser trata de um problema grave e devemos continuar a tratá-lo como um incidente produtivo. Neste caso continuaremos tratando ele pelo board de incidente e a issue deverá seguir o fluxo;\n- Opção 2: Entender que se trata de um problema intermediário ou leve e para solucioná-lo é necessário apenas uma task de correção. Neste caso criaremos uma issue de correção no board 'Task' e neste caso o trabalho da issue estará concluído;\n- Opção 3: Entender que se trata de uma nova funcionalidade e não um problema não tratado: Neste caso criaremos uma issue no board Epic e neste caso o trabalho da issue estará concluído;\n- Opção 4: Entender que não há nada a ser feito e neste caso o trabalho da issue estará cancelado.\n\n# Conclusão\n\n- Após a tomada de decisão, a escolha deverá ser registrada em detalhes no capitulo 'Ação proposta' do arquivo do incidente. Caso a escolha envolva criar outras issues, para cada nova issue:\n    - informe o board, o nome e o conteúdo da issues com a riqueza de detalhes que o template referente a ele em `.kiro/artifacts/` exige.\n- Avançar a issue atual para advance.\n\n\n"
+        target-prompt: "# Análise Final\n\n> Importante: esta etapa não executa a decisão, apenas define, outro agente terá a responsabilidade de executar tudo que esta aqui decidir.\n\n- Avaliar as análise anteriores;\n- Ler documentações, especificações e regras (levar em consideração tanto as documentações internas, quanto as externas)\n\n\n# Decisão de tratamento\n\nA partir das análises anteriores, decidir se o caminho a ser tomado será:\n\n- Opção 1: Entender que ser trata de um problema grave e devemos continuar a tratá-lo como um incidente produtivo. Neste caso continuaremos tratando ele pelo board de incidente e a issue deverá seguir o fluxo;\n- Opção 2: Entender que se trata de um problema intermediário ou leve e para solucioná-lo é necessário apenas uma task de correção. Neste caso criaremos uma issue de correção no board 'Task' e neste caso o trabalho da issue estará concluído;\n- Opção 3: Entender que se trata de uma nova funcionalidade e não um problema não tratado: Neste caso criaremos uma issue no board Epic e neste caso o trabalho da issue estará concluído;\n- Opção 4: Entender que não há nada a ser feito e neste caso o trabalho da issue estará cancelado.\n\n# Conclusão\n\n- Após a tomada de decisão, a escolha deverá ser registrada em detalhes no capitulo 'Ação proposta' do arquivo do incidente. Caso a escolha envolva criar outras issues, para cada nova issue:\n    - informe o board, o nome e o conteúdo da issues com a riqueza de detalhes que o template referente a ele em `.kiro/templates/issues/` exige.\n- Avançar a issue atual para advance.\n\n\n"
         change:
           advance: analise-relatorio
       analise-relatorio:
@@ -530,7 +530,7 @@ boards:
         name: "Planejamento Técnico"
         agent: tech-lead
         gitevents: use
-        target-prompt: "A partir do resultado da análise do incidente, Decompor a solução em tarefas técnicas rastreáveis e criar as issues de task no board\n\n# Após a conclusão:\n- Preencher capitulo 'Tarefas de correção' do arquivo do incidente;\n- Avançar issue para advance."
+        target-prompt: "A partir do resultado da análise do incidente, Decompor a solução em tarefas técnicas rastreáveis e criar as issues de task no board, seguindo o template `.kiro/templates/issues/task.md`\n\n# Após a conclusão:\n- Preencher capitulo 'Tarefas de correção' do arquivo do incidente;\n- Avançar issue para advance."
         change:
           advance: aguardando-tasks
       aguardando-tasks:
