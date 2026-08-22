@@ -134,7 +134,7 @@ boards:
         name: "Arquitetura"
         agent: architecture
         gitevents: use
-        target-prompt: "A partir da documentação e da prototipação, planejar a arquitetura do projeto, faça:\n- Verifique as documentações arquiteturais já existentes;\nBuscar padrões compatíveis para o projeto.\n- Evite arquiteturas mirabolantes ou muito elaboradas, procure o simples que funciona (evite a modinha da vez);\n- Quando tiver tudo que precisa crie e ou atualize a documentação arquitetural do projeto."
+        target-prompt: "A partir da documentação e da prototipação, planejar a arquitetura do projeto, faça:\n- Verifique as documentações arquiteturais já existentes;\nBuscar padrões compatíveis para o projeto.\n- Evite arquiteturas mirabolantes ou muito elaboradas, procure o simples que funciona (evite a modinha da vez);\n- Quando tiver tudo que precisa crie e ou atualize a documentação arquitetural do projeto.\n\nTemplates: baseie os artefatos nos modelos em `.kiro/templates/docs/` (architecture-overview.md, constraints.md, adr.md)."
         change:
           advance: validacao-arquitetura
       validacao-arquitetura:
