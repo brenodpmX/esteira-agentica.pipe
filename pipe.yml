@@ -282,7 +282,7 @@ boards:
       planning-poker:
         name: "Planning Poker"
         agent: tech-lead
-        target-prompt: "Entenda a demanda da issue;\n- Avaliar a complexidade do desenvolvimento;\n- Se for baixa complexidade definir '/agent_level: low', se for média complexidade definir '/agent_level: middle' ou se for alta complexidade definir '/agent_level: high'. Desta forma escolhemos de acordo com a complexidade, entre economizar tokens em tarefas simples ou aprofundar para uma entrega mais precisa em tarefas críticas"
+        target-prompt: "A partir da complexidade da Issue, defina o melhor agente para executar a tarefa:\n- para tarefas leves e sem necessidade de profundidade de raciocínio: low;\n- para tarefas muito complexas e de racionínio profundo: high; \n- para tarefas as demais tarefas: middle;\nCom o resultado da análise, adicione a label `/agent-hub-<sufixo>`, sendo o sufixo o valor definido [high | low | middle]."
         change:
           advance: casos-de-teste
       casos-de-teste:
