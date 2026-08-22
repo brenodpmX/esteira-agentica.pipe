@@ -101,7 +101,7 @@ boards:
         name: "Análise de Negócio"
         agent: product
         gitevents: create
-        target-prompt: "Conduza a diligência de negócio do épico até ele estar apto a avançar.\n\nFaça:\n- Entreviste o dono pelo history/addcomment, tratando as respostas como hipóteses a validar contra fatos, dados e pesquisa de mercado.\n- Pesquise mercado, alternativas e o custo de não fazer; onde faltar prova, pergunte ou pesquise, não suponha.\n- Feche dor, retorno (e como medi-lo), ordem de esforço e aderência a metas e políticas.\n- Sinalize espera por resposta com 'need_human'. Não simule entrevista, não decida tecnologia/arquitetura, não crie stories.\n\nResultado: documentação de negócio que sustente aprovar ou recusar (com justificativa) e o body da issue reescrito refletindo o que será construído."
+        target-prompt: "Conduza a diligência de negócio do épico até ele estar apto a avançar.\n\nFaça:\n- Entreviste o dono pelo history/addcomment, tratando as respostas como hipóteses a validar contra fatos, dados e pesquisa de mercado.\n- Pesquise mercado, alternativas e o custo de não fazer; onde faltar prova, pergunte ou pesquise, não suponha.\n- Feche dor, retorno (e como medi-lo), ordem de esforço e aderência a metas e políticas.\n- Sinalize espera por resposta com 'need_human'. Não simule entrevista, não decida tecnologia/arquitetura, não crie stories.\n\nTemplates: baseie a documentação de negócio nos modelos em `.kiro/templates/docs/` (visão em vision.md, cenário em problem-space.md, blocos de entrega em epicos.md) e reescreva o corpo da issue conforme `.kiro/templates/issues/epic.md`.\n\nResultado: documentação de negócio que sustente aprovar ou recusar (com justificativa) e o body da issue reescrito refletindo o que será construído."
         change:
           advance: aprovacao-negocio
       aprovacao-negocio:
@@ -486,7 +486,7 @@ boards:
         name: "Registro"
         agent: product
         gitevents: create
-        target-prompt: "# Documentar incidente\n\n-Criar o registro do incidente segundo `.kiro/artifacts/incidente.md`\n- Adicionar o arquivo de incidente no body da issue;\n- Colher dados com o usuário;\n\n# Após a conclusão da etapa:\n- Preencher APENAS o capitulo 'Registro' do arquivo do incidente;\n- Avançar issue para advance."
+        target-prompt: "# Documentar incidente\n\n-Criar o registro do incidente segundo `.kiro/templates/docs/incidente.md`\n- Adicionar o arquivo de incidente no body da issue;\n- Colher dados com o usuário;\n\n# Após a conclusão da etapa:\n- Preencher APENAS o capitulo 'Registro' do arquivo do incidente;\n- Avançar issue para advance."
         change:
           advance: triagem
           cancelar: cancelado
