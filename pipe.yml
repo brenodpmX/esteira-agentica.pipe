@@ -209,7 +209,6 @@ boards:
     todo: backlog
     priority: 2
     flow: story
-    parallel: false
     columns:
       backlog:
         name: Backlog
