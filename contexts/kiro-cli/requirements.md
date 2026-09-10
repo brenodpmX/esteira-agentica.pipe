@@ -22,7 +22,7 @@ Não ambíguo · verificável/testável · completo (caminho feliz + exceções 
 
 - Não reabre a análise de negócio (product, já aprovada).
 - Não define arquitetura/tecnologia/*como* (arquitetura).
-- Não desenha telas/fluxos de navegação/protótipos (UX).
+- Não desenha telas/fluxos de navegação/protótipos.
 - Não quebra o épico em stories nem cria issues de story/task (tech-lead, etapa seguinte).
 - Não implementa código nem escreve testes técnicos.
 - Não preenche silêncio com suposição nem simula entrevista — o cliente é real e está à disposição.
