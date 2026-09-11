@@ -1,3 +1,10 @@
+project:
+  name: "Esteira Agêntica"
+  summary: "Esteira de desenvolvimento orientada a issues: agentes de IA conduzem épicos, stories, tasks, bugs e incidentes pelos boards, do backlog à produção, com portões humanos nas colunas de aprovação."
+  humans:
+    - name: Breno
+      role: "dono do produto; aprova negócio e homologa entregas"
+
 sleep: 1800
 
 log:
@@ -14,28 +21,33 @@ git:
 
     hotfix:
       prefix: hotfix
+      branch_pattern: "hotfix/<id>-<slug>"
       description: Usada para correção de bugs em produção
       create: main
       merge: main
 
     docs:
       prefix: docs
+      branch_pattern: "docs/<id>-<slug>"
       description: Branch de documentação (incidente e postmortem), main→main
       create: main
       merge: main
 
     epic:
       prefix: epic
+      branch_pattern: "epic/<id>-<slug>"
       description: Branch para épicos — planejamento e documentação
       create: main
       merge: main
     story:
       prefix: story
+      branch_pattern: "story/<id>-<slug>"
       description: Branch para épicos — planejamento e documentação
       create: epic
       merge: epic
     feature:
       prefix: feature
+      branch_pattern: "feature/<id>-<slug>"
       description: Branch de feature de desenvolvimento
       create: epic
       merge: epic
@@ -70,9 +82,6 @@ agents:
     quality:
       name: Camila Rocha - Engenheira de Qualidade (QA)
       model: claude-sonnet-5
-    devops:
-      name: Felipe Nogueira - Engenheiro DevOps
-      model: claude-sonnet-5
     generic:
       name: Diego Santos - Analista de Operações
       model: claude-haiku-4.5
@@ -86,7 +95,7 @@ boards:
 
   epic:
     name: "Pipe - Epics"
-    desc: 
+    desc: "Épicos: negócio → requisitos → arquitetura → stories"
     todo: backlog
     priority: 1
     flow: epic
@@ -101,7 +110,14 @@ boards:
         name: "Análise de Negócio"
         agent: product
         gitevents: create
-        target-prompt: "Conduza a diligência de negócio do épico até ele estar apto a avançar.\n\nFaça:\n- Entreviste o dono pelo history/addcomment, tratando as respostas como hipóteses a validar contra fatos, dados e pesquisa de mercado.\n- Pesquise mercado, alternativas e o custo de não fazer; onde faltar prova, pergunte ou pesquise, não suponha.\n- Feche dor, retorno (e como medi-lo), ordem de esforço e aderência a metas e políticas.\n- Sinalize espera por resposta com 'need_human'. Não simule entrevista, não decida tecnologia/arquitetura, não crie stories.\n\nTemplates: baseie a documentação de negócio nos modelos em `contexts/templates/docs/` (visão em vision.md, cenário em problem-space.md, blocos de entrega em epicos.md) e reescreva o corpo da issue conforme `contexts/templates/issues/epic.md`.\n\nResultado: documentação de negócio que sustente aprovar ou recusar (com justificativa) e o body da issue reescrito refletindo o que será construído."
+        target-prompt: |-
+          Definir a proposta de negócio do épico — problema, valor, escopo e viabilidade — a ponto de sustentar a decisão de construir (ou não), com o corpo da issue refletindo o que será construído.
+        step-prompt: |-
+          - Construa a proposta junto com o dono, dialogando pelo history/addcomment: o que ele traz é ponto de partida a validar (com fatos, dados e mercado), não verdade pronta — e não presuma respostas por ele; sinalize espera com `need_human`.
+          - Pesquise mercado, alternativas e o custo de não fazer; onde faltar prova, pergunte ou pesquise, não suponha.
+          - Alinhem dor, retorno (e como medi-lo), ordem de esforço e aderência a metas e políticas.
+          - Baseie a documentação nos templates (`vision.md`, `problem-space.md`, `epicos.md`) e reescreva o corpo da issue conforme `epic.md`.
+          - Não decida tecnologia/arquitetura nem crie stories.
         change:
           advance: aprovacao-negocio
       aprovacao-negocio:
@@ -112,7 +128,15 @@ boards:
         name: "Requisitos"
         agent: requirements
         gitevents: create
-        target-prompt: "Feche o baseline de requisitos do épico a partir da documentação de negócio aprovada, até não restar dúvida sobre o que será construído.\n\nFaça:\n- Cubra a documentação existente antes de perguntar; identifique lacunas, ambiguidades e regras implícitas e priorize por risco.\n- Entreviste o cliente pelo history/addcomment quantas rodadas precisar (sinalize a espera com 'need_human'); pesquise fonte externa atual quando o dado não vier dele. Não simule entrevista.\n- Especifique requisitos funcionais (atores, dados, fluxos principais/alternativos), regras de negócio, NFRs mensuráveis e o padrão de critérios de aceitação (Dado/Quando/Então).\n- Cada requisito: não ambíguo, completo, consistente, necessário e testável isoladamente. Não defina arquitetura/tecnologia, não prototipe, não quebre em stories, não implemente. Contradição entre artefatos → pare e sinalize.\n\nTemplates: baseie os artefatos nos modelos em `contexts/templates/docs/` (functional-requirements.md, business-rules.md, non-functional-requirements.md, glossary.md).\n\nResultado: baseline de requisitos, arquitetura e a quebra em stories consumam sem suposições, e o body da issue refletindo o escopo acordado."
+        target-prompt: |-
+          Ter um baseline de requisitos do épico inequívoco — funcionais, regras de negócio, NFRs mensuráveis e padrão de aceitação — que arquitetura e a quebra em stories consumam sem suposições, com o corpo da issue refletindo o escopo acordado.
+        step-prompt: |-
+          - Cubra a documentação de negócio aprovada antes de perguntar; identifique lacunas, ambiguidades e regras implícitas e priorize por risco.
+          - Alinhe com o cliente pelo history/addcomment quantas rodadas precisar (sinalize espera com `need_human`; não presuma respostas); pesquise fonte externa atual quando o dado não vier dele.
+          - Especifique requisitos funcionais (atores, dados, fluxos principais/alternativos), regras de negócio, NFRs mensuráveis e o padrão de aceitação (Dado/Quando/Então).
+          - Garanta cada requisito não ambíguo, completo, consistente, necessário e testável isoladamente; contradição entre artefatos → pare e sinalize.
+          - Baseie os artefatos nos templates (`functional-requirements.md`, `business-rules.md`, `non-functional-requirements.md`, `glossary.md`).
+          - Não defina arquitetura/tecnologia, não prototipe, não quebre em stories, não implemente.
         change:
           advance: validacao-negocial
       validacao-negocial:
@@ -123,7 +147,12 @@ boards:
         name: "Arquitetura"
         agent: architecture
         gitevents: use
-        target-prompt: "A partir da documentação e da prototipação, planejar a arquitetura do projeto, faça:\n- Verifique as documentações arquiteturais já existentes;\nBuscar padrões compatíveis para o projeto.\n- Evite arquiteturas mirabolantes ou muito elaboradas, procure o simples que funciona (evite a modinha da vez);\n- Quando tiver tudo que precisa crie e ou atualize a documentação arquitetural do projeto.\n\nTemplates: baseie os artefatos nos modelos em `contexts/templates/docs/` (architecture-overview.md, constraints.md, adr.md)."
+        target-prompt: |-
+          Ter a arquitetura do projeto definida e documentada — simples e aderente aos requisitos — pronta para guiar a quebra em stories e o desenvolvimento.
+        step-prompt: |-
+          - Parta dos requisitos e verifique a documentação arquitetural já existente; busque padrões compatíveis com o projeto.
+          - Prefira o simples que funciona; evite arquitetura elaborada demais ou a "modinha da vez".
+          - Crie e/ou atualize a documentação arquitetural, baseada nos templates (`architecture-overview.md`, `constraints.md`, `adr.md`).
         change:
           advance: validacao-arquitetura
       validacao-arquitetura:
@@ -134,21 +163,41 @@ boards:
         name: "Criação de User Stories"
         agent: tech-lead
         gitevents: use
-        target-prompt: "Decomponha o épico aprovado em user stories que cubram todo o escopo sem sobreposição, até o épico estar pronto para o desenvolvimento.\n\nFaça:\n- Derive as stories da documentação aprovada (negócio, requisitos, arquitetura); cada uma deve ser uma fatia entregável e coerente de valor, não um recorte técnico arbitrário.\n- Para cada story, crie a issue APENAS no board 'story', na coluna de entrada, com contexto suficiente para ser conduzida sozinha. Baseie documentação e issue no template `contexts/templates/issues/user-story.md`.\n- Cubra o épico inteiro: nenhuma parte do escopo aprovado deve ficar sem story correspondente.\n- Quando houver dependência entre stories, crie-as na ordem de execução e estabeleça o bloqueio: como uma issue só ganha ID ao ser criada, escreva no final da issue que ela só pode ser executada quando a bloqueante finalizar e por isto o agente precisa bloquear via comando. No corpo de cada User Story anote '/blocks #<id deste épico>'.\n\nNão crie a issue em board diferente de 'story', não detalhe tasks técnicas aqui e não deixe escopo órfão.\n\nResultado: épico decomposto em stories rastreáveis e completas, prontas para o planejamento técnico. Avance para advance."
+        target-prompt: |-
+          Decompor o épico aprovado em user stories que cubram todo o escopo, sem sobreposição e sem deixar parte órfã, prontas para o planejamento técnico.
+        step-prompt: |-
+          - Derive as stories da documentação aprovada (negócio, requisitos, arquitetura); cada story é uma fatia entregável de valor, não um recorte técnico.
+          - Crie cada story apenas no board 'story' (coluna de entrada), com contexto suficiente para ser conduzida sozinha; baseie-se no template `user-story.md`.
+          - Em cada story, registre este épico como pai e faça a story bloquear este épico (a story segura o épico até concluir).
+          - Havendo dependência entre stories, crie-as na ordem de execução.
+          - Não detalhe tasks técnicas aqui.
         change:
           advance: aguardando-stories
       aguardando-stories:
         name: "Aguardando Stories"
         agent: generic
         gitevents: use
-        target-prompt: "Mantenha o épico bloqueado enquanto houver stories filhas ativas, conferindo o estado sem interferir nelas.\n\nFaça:\n- Verifique se há issues filhas (User Story) ativas; se houver, registre no corpo desta issue (a pai) '/blocked_by' com o ID de cada filha ativa, mantendo o épico bloqueado enquanto existirem.\n- Confira se alguma filha foi duplicada no próprio board 'epic'; se sim, remova apenas a cópia do board 'epic', preservando a do board 'story'.\n- Só avance quando não restar nenhuma filha ativa.\n\nNão execute o trabalho das filhas nem avance com filha ativa pendente.\n\nResultado: épico retido até as stories concluírem e então liberado. Avance para advance quando não houver filha ativa."
+        target-prompt: |-
+          Garantir que toda story filha esteja bloqueando este épico e manter o épico parado enquanto houver filha ativa.
+        step-prompt: |-
+          - Liste as stories filhas deste épico (as que registram este épico como pai).
+          - Para cada filha ainda aberta que não esteja bloqueando o épico, adicione o id dela em `/blocked_by` deste épico (nesta etapa a filha já tem id).
+          - Se alguma filha foi duplicada indevidamente neste board 'epic', remova apenas a cópia daqui (a válida é a do board 'story').
+          - Enquanto houver filha aberta, não avance; quando todas concluírem, avance.
         change:
           advance: pre-prod
       pre-prod:
         name: "Pré produção"
         agent: tech-lead
         gitevents: use
-        target-prompt: "# Execução pré produção\nPreparar o ambiente pré produtivo para o humano homologar, faça:\n- Mergear a branch main na branch do epico;\n- Resolver os conflitos;\n- Validar se todas as mudanças estão presentes e integras;\n- Preparar o ambiente pré-produtivo (docker compose) para homologação;\n- Escrever orientações detalhadas para como executar o ambiente pré produtivo;\n- avançar a issue para advance."
+        target-prompt: |-
+          Ter o ambiente pré-produtivo do épico pronto para o humano homologar — branch integrada com a `main`, íntegra, e com instruções claras de execução.
+        step-prompt: |-
+          - Traga a `main` para a branch do épico (merge) e resolva os conflitos.
+          - Valide que todas as mudanças estão presentes e íntegras após a integração.
+          - Prepare o ambiente pré-produtivo (docker compose) para homologação.
+          - Escreva orientações detalhadas de como executar o ambiente pré-produtivo.
+          - Informe quais mudanças estão sendo homologadas (resumo do que será validado).
         change:
           advance: homologacao
       homologacao:
@@ -159,27 +208,41 @@ boards:
         name: "Documentação"
         agent: tech-lead
         gitevents: use
-        target-prompt: "Atualizar a versão, README, documentações públicas e change files, refletindo as mudanças entregues"
+        target-prompt: |-
+          Ter versão, README, documentações públicas e change files atualizados, refletindo as mudanças entregues no épico.
         change:
           advance: merge-request
       merge-request:
         name: "Merge Request"
         agent: generic
         gitevents: merge
-        target-prompt: "Abrir o merge request da branch da issue para a branch de destino. Se já existir um merge request aberto para esta branch (caso de retrabalho), não crie outro — apenas confirme que reflete os commits atuais e prossiga."
+        target-prompt: |-
+          Ter o merge request da issue aberto (da branch de trabalho para a branch de destino), refletindo os commits atuais.
+        step-prompt: |-
+          - Se já houver MR aberto para esta branch (retrabalho), não crie outro: confirme que reflete os commits atuais e prossiga.
         change:
           advance: code-review
       code-review:
         name: "Code Review"
         agent: reviewer
-        target-prompt: "Revise o merge request do épico como portão de qualidade antes da integração.\n\nFaça:\n- Verifique boas práticas, padrões de arquitetura, code-smell, aderência ao que foi solicitado, ausência de delírio, se compila, cobertura de testes conforme especificado e legibilidade (baixa complexidade).\n- Aprovado: conclua o merge e avance para advance.\n- Reprovado: crie uma issue de bug no board 'bug' (coluna de entrada) seguindo `contexts/templates/issues/bug.md`, descrevendo o problema; preencha as Referências com 'Issue original' = este épico e 'Branch original' = a branch deste épico; no corpo do bug anote '/blocks #<id deste épico>' para que ele bloqueie o épico; adicione a label 'retrabalho' a este épico e avance para correcao.\n\nAo reanalisar, não remova a tag 'retrabalho'.\n\nResultado: épico integrado com qualidade verificada, ou devolvido com um bug bloqueante e apontamentos claros. Avance conforme o veredito."
+        target-prompt: |-
+          Servir de portão de qualidade do épico antes da integração: se aprovado, épico integrado; se reprovado, épico devolvido com um bug bloqueante e apontamentos claros.
+        step-prompt: |-
+          - Revise o MR: boas práticas, padrões de arquitetura, code-smell, aderência ao solicitado, ausência de delírio, se compila, cobertura de testes conforme especificado e legibilidade (baixa complexidade).
+          - Aprovado: conclua o merge e avance.
+          - Reprovado: crie um bug no board 'bug' (coluna de entrada) seguindo `bug.md`, descrevendo o problema; preencha as Referências (Issue original = este épico; Branch original = a branch deste épico); faça o bug bloquear este épico; adicione a label 'retrabalho' ao épico e avance para correcao.
+          - Ao reanalisar, não remova a label 'retrabalho'.
         change:
           correcao: aguardando-stories
           advance: report-negocial
       report-negocial:
         name: "Report Negocial"
         agent: tech-lead
-        target-prompt: "Acabamos de enviar o Épico para produção, faça um report de tudo que foi implantado, melhorias, correções e novas funcionalidades, informe também débitos tecnicos que ficaram caso existam. Envie o report para o addcomment em linguagem exclusivamente negocial, evite linguagens tecnicas"
+        target-prompt: |-
+          Ter um report negocial do que foi para produção neste épico — funcionalidades, melhorias, correções e débitos técnicos remanescentes — registrado no addcomment.
+        step-prompt: |-
+          - Levante tudo que foi implantado: novas funcionalidades, melhorias e correções; inclua os débitos técnicos que ficaram, se houver.
+          - Escreva o report no addcomment em linguagem exclusivamente negocial, evitando termos técnicos.
         change:
           advance: em-produção
       em-produção:
@@ -189,13 +252,21 @@ boards:
       concluido:
         name: "Concluído"
         agent: generic
-        target-prompt: "Remova desta issue todas as relações de bloqueio existente e avance para advance"
+        target-prompt: |-
+          A issue sem nenhuma relação de bloqueio, liberando quem dependia dela.
+        on_out: [completed]
         change:
           advance: encerrado
       cancelado:
         name: "Cancelado"
         agent: generic
-        target-prompt: "- Mova todas as issues filhas desta para o cancelado de seu respectivo board;\n- Remova todas as relações de bloqueio desta issue;\n- Remova a branch local e no servidor;\n- Avance para advance."
+        target-prompt: |-
+          A issue cancelada e limpa: filhas canceladas, sem relações de bloqueio e sem branch remanescente.
+        step-prompt: |-
+          - Mova todas as issues filhas desta para 'cancelado' no board de cada uma.
+          - Remova todas as relações de bloqueio desta issue.
+          - Remova a branch (local e remota).
+        on_out: [not_planned]
         change:
           advance: encerrado
       encerrado:
@@ -206,6 +277,7 @@ boards:
   
   story:
     name: "Pipe - User Stories"
+    desc: "User stories: planejamento técnico → tasks → integração"
     todo: backlog
     priority: 2
     flow: story
@@ -219,47 +291,78 @@ boards:
         name: "Planejamento Técnico"
         agent: tech-lead
         gitevents: use
-        target-prompt: "Transforme a story aprovada em um plano de execução e na divisão de tarefas técnicas, até restar apenas implementar.\n\nFaça:\n- A partir das documentações negocial, de prototipação e arquitetural, defina o plano de execução e quebre-o em tasks.\n- Crie as tasks APENAS no board 'task', na coluna de entrada, seguindo o template `contexts/templates/issues/task.md`; cada task deve ser entregável, testável isoladamente e redigida de forma que uma IA a execute sem ambiguidade.\n- Crie as tasks na ordem em que precisam ser executadas e estabeleça os bloqueios de dependência entre elas: como uma issue só ganha ID ao ser criada, anote no final do body da issue bloqueada que ela deve aguardar a conclusão da issue X e por isso o agente precisa criar o bloqueio. No corpo de cada Task anote '/blocks #<id deste User Story>'.\n\nNão crie as issues em board diferente de 'task', não implemente aqui e não deixe task vaga ou dependente de contexto que não esteja escrito.\n\nResultado: story decomposta em tasks ordenadas, executáveis e testáveis, prontas para o desenvolvimento. Avance para advance."
+        target-prompt: |-
+          Transformar a story aprovada em um plano dividido em tasks técnicas — entregáveis, testáveis isoladamente e sem ambiguidade — até restar apenas implementar.
+        step-prompt: |-
+          - A partir das documentações (negocial e arquitetural), defina o plano e quebre-o em tasks.
+          - Crie cada task apenas no board 'task' (coluna de entrada), seguindo o template `task.md`; entregável, testável isoladamente e redigida para uma IA executar sem ambiguidade.
+          - Em cada task, registre esta story como pai e faça a task bloquear esta story (a task segura a story até concluir).
+          - Havendo dependência entre tasks, crie-as na ordem de execução.
+          - Não implemente aqui nem deixe task vaga ou dependente de contexto não escrito.
         change:
           advance: aguardando-tasks
       aguardando-tasks:
         name: "Aguardando Tasks"
         agent: generic
         gitevents: use
-        target-prompt: "Mantenha a story bloqueada enquanto houver tasks filhas ativas, conferindo o estado sem interferir nelas.\n\nFaça:\n- Verifique se há issues filhas (Task) ativas; se houver, registre no corpo desta issue (a pai) '/blocked_by' com o ID de cada filha ativa, mantendo a story bloqueada enquanto existirem.\n- Confira se alguma filha foi duplicada no próprio board 'story'; se sim, remova apenas a cópia do board 'story', preservando a do board 'task'.\n- Só avance quando não restar nenhuma filha ativa.\n\nNão execute o trabalho das filhas nem avance com filha ativa pendente.\n\nResultado: story retida até as tasks concluírem e então liberada. Avance para advance quando não houver filha ativa."
+        target-prompt: |-
+          Garantir que toda task filha esteja bloqueando esta story e manter a story parada enquanto houver filha ativa.
+        step-prompt: |-
+          - Liste as tasks filhas desta story (as que registram esta story como pai).
+          - Para cada filha ainda aberta que não esteja bloqueando a story, adicione o id dela em `/blocked_by` desta story (nesta etapa a filha já tem id).
+          - Se alguma filha foi duplicada indevidamente neste board 'story', remova apenas a cópia daqui (a válida é a do board 'task').
+          - Enquanto houver filha aberta, não avance; quando todas concluírem, avance.
         change:
           advance: change-file
       change-file:
         name: "Change File"
         agent: tech-lead
         gitevents: use
-        target-prompt: "Criar change file informando todas as alterações entregues na story, verificar se todos os bloqueios do Epico foram concluídos, se sim mova o epico para a advance."
+        target-prompt: |-
+          Ter o change file da story criado, registrando todas as alterações entregues nela.
         change:
           advance: merge-request
       merge-request:
         name: "Merge Request"
         agent: generic
         gitevents: merge
-        target-prompt: "Abrir o merge request da branch da issue para a branch de destino. Se já existir um merge request aberto para esta branch (caso de retrabalho), não crie outro — apenas confirme que reflete os commits atuais e prossiga."
+        target-prompt: |-
+          Ter o merge request da issue aberto (da branch de trabalho para a branch de destino), refletindo os commits atuais.
+        step-prompt: |-
+          - Se já houver MR aberto para esta branch (retrabalho), não crie outro: confirme que reflete os commits atuais e prossiga.
         change:
           advance: code-review
       code-review:
         name: "Code Review"
         agent: reviewer
-        target-prompt: "Revise o merge request da story como portão de qualidade antes da integração.\n\nFaça:\n- Verifique boas práticas, padrões de arquitetura, code-smell, aderência ao que foi solicitado, ausência de delírio, se compila, cobertura de testes conforme especificado e legibilidade (baixa complexidade).\n- Aprovado: conclua o merge e avance para advance.\n- Reprovado: crie uma issue de bug no board 'bug' (coluna de entrada) seguindo `contexts/templates/issues/bug.md`, descrevendo o problema; preencha as Referências com 'Issue original' = esta story e 'Branch original' = a branch desta story; no corpo do bug anote '/blocks #<id desta story>' para que ele bloqueie a story; adicione a label 'retrabalho' a esta story e avance para correcao.\n\nAo reanalisar, não remova a tag 'retrabalho'.\n\nResultado: story integrada com qualidade verificada, ou devolvida com um bug bloqueante e apontamentos claros. Avance conforme o veredito."
+        target-prompt: |-
+          Servir de portão de qualidade da story antes da integração: se aprovada, story integrada; se reprovada, story devolvida com um bug bloqueante e apontamentos claros.
+        step-prompt: |-
+          - Revise o MR: boas práticas, padrões de arquitetura, code-smell, aderência ao solicitado, ausência de delírio, se compila, cobertura de testes conforme especificado e legibilidade (baixa complexidade).
+          - Aprovado: conclua o merge e avance.
+          - Reprovado: crie um bug no board 'bug' (coluna de entrada) seguindo `bug.md`, descrevendo o problema; preencha as Referências (Issue original = esta story; Branch original = a branch desta story); faça o bug bloquear esta story; adicione a label 'retrabalho' à story e avance para correcao.
+          - Ao reanalisar, não remova a label 'retrabalho'.
         change:
           advance: concluido
           correcao: aguardando-tasks
       concluido:
         name: "Concluído"
         agent: generic
-        target-prompt: "Remova desta issue todas as relações de bloqueio existente e avance para advance"
+        target-prompt: |-
+          A issue sem nenhuma relação de bloqueio, liberando quem dependia dela.
+        on_out: [completed]
         change:
           advance: encerrado
       cancelado:
         name: "Cancelado"
         agent: generic
-        target-prompt: "- Mova todas as issues filhas desta para o cancelado de seu respectivo board;\n- Remova todas as relações de bloqueio desta issue;\n- Remova a branch local e no servidor;\n- Avance para advance."
+        target-prompt: |-
+          A issue cancelada e limpa: filhas canceladas, sem relações de bloqueio e sem branch remanescente.
+        step-prompt: |-
+          - Mova todas as issues filhas desta para 'cancelado' no board de cada uma.
+          - Remova todas as relações de bloqueio desta issue.
+          - Remova a branch (local e remota).
+        on_out: [not_planned]
         change:
           advance: encerrado
       encerrado:
@@ -269,6 +372,7 @@ boards:
 
   task:
     name: "Pipe - Tasks"
+    desc: "Unidade de desenvolvimento: teste → dev → review"
     todo: backlog
     priority: 5
     flow: feature
@@ -281,14 +385,23 @@ boards:
       planning-poker:
         name: "Planning Poker"
         agent: tech-lead
-        target-prompt: "A partir da complexidade da Issue, defina o melhor agente para executar a tarefa:\n- para tarefas leves e sem necessidade de profundidade de raciocínio: low;\n- para tarefas muito complexas e de racionínio profundo: high; \n- para tarefas as demais tarefas: middle;\nCom o resultado da análise, adicione a label `/agent-hub-<sufixo>`, sendo o sufixo o valor definido [high | low | middle]."
+        target-prompt: |-
+          Ter a task classificada por complexidade, roteada para o agente certo.
+        step-prompt: |-
+          - Avalie a complexidade da task: `low` (leve, sem raciocínio profundo), `high` (muito complexa, raciocínio profundo) ou `middle` (as demais).
+          - Rotule a task com `/agent-hub-<valor>`, usando exatamente `low`, `middle` ou `high`.
         change:
           advance: casos-de-teste
       casos-de-teste:
         name: "Casos de Teste"
         agent: quality
         gitevents: create
-        target-prompt: "Especifique os casos de teste da task a partir do que foi pedido, sem exceder o escopo.\n\nFaça:\n- Analise a issue e avalie os casos de teste já existentes antes de criar novos.\n- Crie ou ajuste os casos de teste do serviço seguindo o template `contexts/templates/docs/test-cases.md`, cobrindo o cenário descrito.\n- Faça exclusivamente o que foi pedido — não amplie o escopo por conta própria.\n\nEm caso de dúvida: se for simples, pergunte via chat e adicione a label 'need_human'; se for dúvida complexa ou definição ausente, crie uma issue no board 'debito' seguindo `contexts/templates/issues/debito.md`, na coluna do agente que sanará a lacuna. No corpo do débito anote '/blocks #<id desta task>'.\n\nResultado: casos de teste completos e fiéis ao escopo, prontos para o desenvolvimento. Avance para advance."
+        target-prompt: |-
+          Ter os casos de teste da task completos e fiéis ao escopo, prontos para o desenvolvimento.
+        step-prompt: |-
+          - Analise a issue e avalie os casos de teste já existentes antes de criar novos.
+          - Crie ou ajuste os casos de teste seguindo o template `test-cases.md`, cobrindo o cenário descrito; faça exclusivamente o que foi pedido, sem ampliar o escopo.
+          - Em dúvida simples: pergunte via chat e adicione a label 'need_human'. Em dúvida complexa ou definição ausente: crie um débito no board 'debito' (na coluna do agente que sanará a lacuna) seguindo `debito.md` e faça o débito bloquear esta task.
         change:
           advance: desenvolvimento
       desenvolvimento:
@@ -299,7 +412,12 @@ boards:
           middle: engineering-pl
           high: engineering-sr
         gitevents: use
-        target-prompt: "Implemente a task conforme o solicitado, guiado pelos casos de teste, sem exceder o escopo.\n\nFaça:\n- Analise a issue e avalie os casos de teste criados; quando possível, trabalhe em TDD.\n- Desenvolva o código do que foi solicitado e cubra os novos códigos com testes.\n- Faça exclusivamente o que foi pedido.\n\nEm caso de dúvida: se for sobre os casos de teste, devolva a issue ao tester avançando para revisar-caso-de-teste; se for simples, pergunte via chat e adicione a label 'need_human'; se for dúvida complexa ou definição ausente, crie uma issue no board 'debito' seguindo `contexts/templates/issues/debito.md`, na coluna do agente que sanará a lacuna. No corpo do débito anote '/blocks #<id desta task>'.\n\nResultado: código entregue conforme o solicitado e coberto por testes, pronto para a execução de testes. Avance para advance."
+        target-prompt: |-
+          Ter o código da task entregue conforme o solicitado e coberto por testes, pronto para a execução de testes.
+        step-prompt: |-
+          - Analise a issue e os casos de teste criados; quando possível, trabalhe em TDD.
+          - Desenvolva exatamente o que foi solicitado e cubra os novos códigos com testes.
+          - Dúvida sobre os casos de teste: devolva ao tester avançando para revisar-caso-de-teste. Dúvida simples: pergunte via chat e adicione 'need_human'. Dúvida complexa ou definição ausente: crie um débito no board 'debito' (coluna do agente que sanará a lacuna) seguindo `debito.md` e faça o débito bloquear esta task.
         change:
           advance: execucao-testes
           revisar-caso-de-teste: casos-de-teste
@@ -307,7 +425,14 @@ boards:
         name: "Execução de Testes"
         agent: quality
         gitevents: use
-        target-prompt: "- Listar casos de testes referente ao desenvolvimento;\n- Se houver alguma dúvida ou ambiguidade nos casos de teste, devolva a task para a coluna de criação de casos de teste, avançando para revisar-casos-de-teste.\n- Executar casos de teste;\n- Registrar resultados seguindo o template `contexts/templates/docs/test-results.md`;\n- Se sucesso: avançar para advance;\nSe for reprovado ou parcialmente reprovado: avançar para falha.\n\nImportante: Não altera código, não cria nem altera caso de teste."
+        target-prompt: |-
+          Ter o veredito de teste da task registrado — aprovado, reprovado ou parcialmente reprovado — a partir da execução dos casos de teste.
+        step-prompt: |-
+          - Liste os casos de teste referentes ao desenvolvimento e execute-os.
+          - Registre os resultados seguindo o template `test-results.md`.
+          - Sucesso: avance. Reprovado ou parcialmente reprovado: avance para falha.
+          - Dúvida ou ambiguidade nos casos de teste: devolva à criação de casos avançando para revisar-caso-de-teste.
+          - Não altere código nem crie/altere casos de teste.
         change:
           advance: merge-request
           falha: desenvolvimento
@@ -316,26 +441,43 @@ boards:
         name: "Merge Request"
         agent: generic
         gitevents: merge
-        target-prompt: "Abrir o merge request da branch da issue para a branch de destino. Se já existir um merge request aberto para esta branch (caso de retrabalho), não crie outro — apenas confirme que reflete os commits atuais e prossiga."
+        target-prompt: |-
+          Ter o merge request da issue aberto (da branch de trabalho para a branch de destino), refletindo os commits atuais.
+        step-prompt: |-
+          - Se já houver MR aberto para esta branch (retrabalho), não crie outro: confirme que reflete os commits atuais e prossiga.
         change:
           advance: code-review
       code-review:
         name: "Code Review"
         agent: reviewer
-        target-prompt: "Analisar o MR e verificar: se está seguindo as boas práticas; se está seguindo os padrões da arquitetura; se existe algum code-smell; se o que foi feito está de acordo com o que foi solicitado; se existe algum delírio; se o código compila; se a cobertura de testes está de acordo com o especificado; e se a complexidade do código está baixa, logo a legibilidade está ótima. Se tudo estiver bem, aprove e conclua o MR e avance para advance; se algum critério não passar, adicione a label 'retrabalho', anote o problema e avance para correcao.\nExcluir a branch após o merge request concluído. Obs.: Ao reanalisar a issue, não remova a tag retrabalho."
+        target-prompt: |-
+          Servir de portão de qualidade da task antes de concluir: se aprovada, MR concluído e branch removida; se reprovada, devolvida ao desenvolvimento com apontamentos.
+        step-prompt: |-
+          - Revise o MR: boas práticas, padrões de arquitetura, code-smell, aderência ao solicitado, ausência de delírio, se compila, cobertura de testes conforme especificado e legibilidade (baixa complexidade).
+          - Aprovado: conclua o merge, exclua a branch e avance.
+          - Reprovado: adicione a label 'retrabalho', anote o problema e avance para correcao.
+          - Ao reanalisar, não remova a label 'retrabalho'.
         change:
           advance: concluido
           correcao: desenvolvimento
       concluido:
         name: "Concluído"
         agent: generic
-        target-prompt: "Remova desta issue todas as relações de bloqueio existente e avance para advance"
+        target-prompt: |-
+          A issue sem nenhuma relação de bloqueio, liberando quem dependia dela.
+        on_out: [completed]
         change:
           advance: encerrado
       cancelado:
         name: "Cancelado"
         agent: generic
-        target-prompt: "- Mova todas as issues filhas desta para o cancelado de seu respectivo board;\n- Remova todas as relações de bloqueio desta issue;\n- Remova a branch local e no servidor;\n- Avance para advance."
+        target-prompt: |-
+          A issue cancelada e limpa: filhas canceladas, sem relações de bloqueio e sem branch remanescente.
+        step-prompt: |-
+          - Mova todas as issues filhas desta para 'cancelado' no board de cada uma.
+          - Remova todas as relações de bloqueio desta issue.
+          - Remova a branch (local e remota).
+        on_out: [not_planned]
         change:
           advance: encerrado
       encerrado:
@@ -345,6 +487,7 @@ boards:
 
   bug:
     name: "Pipe - Bugs"
+    desc: "Defeitos achados em teste/review"
     todo: backlog
     priority: 4
     # sem flow: branch de origem/correção vêm das Referências da issue
@@ -357,46 +500,79 @@ boards:
       analise-tecnica:
         name: "Análise Técnica"
         agent: engineering-sr
-        target-prompt: "Analise o bug reportado até ter um plano de correção claro ou identificar um impedimento.\n\nFaça:\n- Localize a branch de origem e a de correção nas 'Referências' do corpo da issue (Branch original / /parent_branch e /branch).\n- Confirme o defeito e determine o que precisa ser corrigido.\n- Se houver débito técnico ou negocial que impeça a correção, crie uma issue no board 'debito' seguindo `contexts/templates/issues/debito.md`, detalhando o problema, referencie o id deste bug no corpo do débito. No corpo do débito  anote '/blocks #<id deste bug>'.\n- Sem impedimento e com a correção clara, elabore o plano de desenvolvimento e avance para advance.\n\nResultado: plano de correção fundamentado, ou bug bloqueado por um débito que precisa ser sanado antes. Avance conforme o caso."
+        target-prompt: |-
+          Ter um plano de correção do bug fundamentado — ou o bug bloqueado por um débito que precisa ser sanado antes.
+        step-prompt: |-
+          - Identifique a branch de origem (`branch pai`) e a de correção (`branch`) do bug.
+          - Confirme o defeito e determine o que precisa ser corrigido.
+          - Havendo débito técnico ou negocial que impeça a correção: crie um débito no board 'debito' seguindo `debito.md`, referencie este bug e faça o débito bloquear este bug.
+          - Sem impedimento e com a correção clara, elabore o plano de desenvolvimento.
         change:
           advance: correcao
           cancelar: cancelado
       correcao:
         name: "Correção"
         agent: engineering-sr
-        target-prompt: "Corrija o bug garantindo que os testes existentes continuem passando. Git (execute explicitamente): faça checkout da branch de origem (Branch original / /parent_branch), crie ou atualize a branch de correção (/branch) a partir dela, aplique a correção e faça commit e push da branch de correção. NÃO mescle nesta etapa."
+        target-prompt: |-
+          Ter o bug corrigido na branch de correção, com os testes existentes ainda passando, sem mesclar.
+        step-prompt: |-
+          - Trabalhe na branch de correção (`branch`), criada a partir da branch de origem (`branch pai`).
+          - Aplique a correção garantindo que os testes existentes continuem passando.
+          - Faça commit e push da branch de correção; não mescle nesta etapa.
         change:
           advance: reteste
       reteste:
         name: "Reteste"
         agent: quality
-        target-prompt: "Na branch de correção (/branch), reexecute os casos de teste e valide que o bug foi corrigido sem regressão. Registre os resultados seguindo o template `contexts/templates/docs/test-results.md`. Aprovado: avance para advance. Reprovado: avance para falha."
+        target-prompt: |-
+          Ter o veredito do reteste do bug registrado — corrigido sem regressão, ou reprovado.
+        step-prompt: |-
+          - Na branch de correção (`branch`), reexecute os casos de teste e valide que o bug foi corrigido sem regressão.
+          - Registre os resultados seguindo o template `test-results.md`.
+          - Aprovado: avance. Reprovado: avance para falha.
         change:
           advance: merge-request
           falha: correcao
       merge-request:
         name: "Merge Request"
         agent: generic
-        target-prompt: "Abra o merge request da branch de correção (/branch) para a branch de origem (Branch original / /parent_branch). Se já existir um MR aberto para essa branch (retrabalho), não crie outro — apenas confirme que reflete os commits atuais e prossiga."
+        target-prompt: |-
+          Ter o merge request aberto da branch de correção (`branch`) para a branch de origem (`branch pai`), refletindo os commits atuais.
+        step-prompt: |-
+          - Se já houver MR aberto para essa branch (retrabalho), não crie outro: confirme que reflete os commits atuais e prossiga.
         change:
           advance: code-review
       code-review:
         name: "Code Review"
         agent: reviewer
-        target-prompt: "Analisar o MR e verificar: boas práticas; padrões de arquitetura; code-smell; aderência ao solicitado; ausência de delírios; se compila; cobertura de testes conforme especificado; baixa complexidade/boa legibilidade. Se tudo estiver bem, aprove e conclua o merge na branch de origem (Branch original / /parent_branch) e exclua a branch de correção. Se algum critério não passar, adicione a label 'retrabalho', anote o problema e avance para correcao. Obs.: Ao reanalisar a issue, não remova a tag retrabalho."
+        target-prompt: |-
+          Servir de portão de qualidade da correção do bug: se aprovada, merge na branch de origem e branch de correção removida; se reprovada, devolvida à correção com apontamentos.
+        step-prompt: |-
+          - Revise o MR: boas práticas, padrões de arquitetura, code-smell, aderência ao solicitado, ausência de delírio, se compila, cobertura de testes conforme especificado e legibilidade (baixa complexidade).
+          - Aprovado: conclua o merge na branch de origem (`branch pai`), exclua a branch de correção (`branch`) e avance.
+          - Reprovado: adicione a label 'retrabalho', anote o problema e avance para correcao.
+          - Ao reanalisar, não remova a label 'retrabalho'.
         change:
           advance: concluido
           correcao: correcao
       concluido:
         name: "Concluído"
         agent: generic
-        target-prompt: "Remova desta issue todas as relações de bloqueio existente e avance para advance"
+        target-prompt: |-
+          A issue sem nenhuma relação de bloqueio, liberando quem dependia dela.
+        on_out: [completed]
         change:
           advance: encerrado
       cancelado:
         name: "Cancelado"
         agent: generic
-        target-prompt: "- Mova todas as issues filhas desta para o cancelado de seu respectivo board;\n- Remova todas as relações de bloqueio desta issue;\n- Remova a branch local e no servidor;\n- Avance para advance."
+        target-prompt: |-
+          A issue cancelada e limpa: filhas canceladas, sem relações de bloqueio e sem branch remanescente.
+        step-prompt: |-
+          - Mova todas as issues filhas desta para 'cancelado' no board de cada uma.
+          - Remova todas as relações de bloqueio desta issue.
+          - Remova a branch (local e remota).
+        on_out: [not_planned]
         change:
           advance: encerrado
       encerrado:
@@ -406,6 +582,7 @@ boards:
 
   debito:
     name: "Pipe - Débitos"
+    desc: "Lacunas de definição (negocial/arquitetural/humana)"
     priority: 3
     # sem flow: branch de origem/correção vêm da issue (/parent_branch, /branch) — modelo dinâmico
     todo: humano
@@ -417,7 +594,12 @@ boards:
       product:
         name: "Débito negocial"
         agent: product
-        target-prompt: "Sanar débito negocial: analise e resolva a lacuna de definição negocial solicitada. Se a resolução depender de definição humana, avance para humano; se depender de design ou arquitetura, avance para architecture. Git (execute explicitamente): faça checkout da branch de origem (/parent_branch), crie ou atualize a branch de correção (/branch) a partir dela, registre a definição na documentação pertinente e faça commit e push da branch de correção. Quando a informação estiver resolvida, avance para advance."
+        target-prompt: |-
+          Ter o débito negocial sanado — lacuna resolvida e registrada na documentação — ou encaminhado a quem pode resolvê-lo.
+        step-prompt: |-
+          - Analise e resolva a lacuna de definição negocial; registre a definição na documentação pertinente.
+          - Trabalhe na branch de correção (`branch`), criada a partir da branch de origem (`branch pai`); faça commit e push.
+          - Se depender de definição humana, avance para humano; se depender de design/arquitetura, avance para architecture.
         change:
           advance: merge-request
           architecture: architecture
@@ -425,7 +607,12 @@ boards:
       architecture:
         name: "Debito Arquitetural"
         agent: architecture
-        target-prompt: "Sanar débito arquitetural: analise e resolva a lacuna de definição arquitetural solicitada (ou o impacto de definições negociais/design na arquitetura). Se depender de definição negocial ou de design, avance para product. Git (execute explicitamente): faça checkout da branch de origem (/parent_branch), crie ou atualize a branch de correção (/branch) a partir dela, registre a definição na documentação pertinente e faça commit e push da branch de correção. Quando a informação estiver resolvida, avance para advance."
+        target-prompt: |-
+          Ter o débito arquitetural sanado — lacuna resolvida e registrada na documentação — ou encaminhado a quem pode resolvê-lo.
+        step-prompt: |-
+          - Analise e resolva a lacuna de definição arquitetural (ou o impacto de definições negociais/design na arquitetura); registre na documentação pertinente.
+          - Trabalhe na branch de correção (`branch`), criada a partir da branch de origem (`branch pai`); faça commit e push.
+          - Se depender de definição negocial ou de design, avance para product.
         change:
           advance: merge-request
           product: product
@@ -433,26 +620,43 @@ boards:
       merge-request:
         name: "Merge Request"
         agent: generic
-        target-prompt: "Abra o merge request da branch de correção (/branch) para a branch de origem (/parent_branch), ambas informadas na issue. Se já existir um MR aberto para essa branch (retrabalho), não crie outro — apenas confirme que reflete os commits atuais e prossiga."
+        target-prompt: |-
+          Ter o merge request aberto da branch de correção (`branch`) para a branch de origem (`branch pai`), refletindo os commits atuais.
+        step-prompt: |-
+          - Se já houver MR aberto para essa branch (retrabalho), não crie outro: confirme que reflete os commits atuais e prossiga.
         change:
           advance: code-review
       code-review:
         name: "Code Review"
         agent: reviewer
-        target-prompt: "Analisar o MR e verificar se a definição/documentação resolve a lacuna de forma completa, consistente com as políticas e documentações existentes e sem contradições. Se estiver adequada, aprove e conclua o merge na branch de origem (/parent_branch) e avance para advance. Se não estiver, NÃO crie bug (trata-se de definição/política, não de código): anote o problema encontrado no comentário da issue e avance para correcao. Obs.: Ao reanalisar a issue, não remova a tag retrabalho."
+        target-prompt: |-
+          Servir de portão de qualidade do débito: se a definição resolve a lacuna (completa, consistente e sem contradições), merge na branch de origem; senão, devolvida à correção com apontamentos.
+        step-prompt: |-
+          - Verifique se a definição/documentação resolve a lacuna de forma completa, consistente com as políticas/documentações existentes e sem contradições.
+          - Adequada: conclua o merge na branch de origem (`branch pai`) e avance.
+          - Inadequada: NÃO crie bug (é definição/política, não código); anote o problema no comentário e avance para correcao.
+          - Ao reanalisar, não remova a label 'retrabalho'.
         change:
           advance: concluido
           correcao: humano
       concluido:
         name: "Concluído"
         agent: generic
-        target-prompt: "Remova desta issue todas as relações de bloqueio existente e avance para advance"
+        target-prompt: |-
+          A issue sem nenhuma relação de bloqueio, liberando quem dependia dela.
+        on_out: [completed]
         change:
           advance: encerrado
       cancelado:
         name: "Cancelado"
         agent: generic
-        target-prompt: "- Mova todas as issues filhas desta para o cancelado de seu respectivo board;\n- Remova todas as relações de bloqueio desta issue;\n- Remova a branch local e no servidor;\n- Avance para advance."
+        target-prompt: |-
+          A issue cancelada e limpa: filhas canceladas, sem relações de bloqueio e sem branch remanescente.
+        step-prompt: |-
+          - Mova todas as issues filhas desta para 'cancelado' no board de cada uma.
+          - Remova todas as relações de bloqueio desta issue.
+          - Remova a branch (local e remota).
+        on_out: [not_planned]
         change:
           advance: encerrado
       encerrado:
@@ -462,6 +666,7 @@ boards:
 
   incidente:
     name: "Pipe - Incidente"
+    desc: "Coordenação de incidente em produção"
     priority: 1
     flow: docs
     todo: reportado
@@ -474,7 +679,13 @@ boards:
         name: "Registro"
         agent: tech-lead
         gitevents: create
-        target-prompt: "Abra o registro do incidente e estabeleça a base factual mínima antes de qualquer análise.\n\nFaça:\n- Crie o documento do incidente conforme `contexts/templates/docs/incidente.md` em `doc/incidente/<slug>/ticket.md`, na branch de documentação criada a partir da main, e vincule-o no corpo da issue.\n- Colha do reportante, via history/addcomment, o que aconteceu, quando começou, como se manifesta e o que já se sabe; trate relatos como indícios a confirmar, não como fatos.\n- Onde faltar informação essencial, pergunte e sinalize a espera com 'need_human'; não preencha lacunas por suposição.\n\nPreencha APENAS o capítulo 'Registro' (descrição, data/hora, reportante, evidências e impacto observado). Não faça triagem, não classifique severidade, não investigue causa.\n\nResultado: registro rastreável e suficiente para a triagem começar sem reconstruir o que já foi dito. Avance para advance."
+        target-prompt: |-
+          Ter o registro do incidente rastreável e suficiente para a triagem começar sem reconstruir o que já foi dito.
+        step-prompt: |-
+          - Crie o documento do incidente conforme `incidente.md` em `doc/incidente/<slug>/ticket.md`, na branch de documentação (a partir da main), e vincule-o no corpo da issue.
+          - Colha do reportante (via history/addcomment) o que aconteceu, quando começou, como se manifesta e o que já se sabe; trate relatos como indícios a confirmar, não fatos.
+          - Onde faltar informação essencial, pergunte e sinalize com 'need_human'; não preencha lacunas por suposição.
+          - Preencha APENAS o capítulo 'Registro' (descrição, data/hora, reportante, evidências, impacto observado). Não faça triagem, não classifique severidade, não investigue causa.
         change:
           advance: triagem
           cancelar: cancelado
@@ -482,7 +693,14 @@ boards:
         name: "Triagem"
         agent: tech-lead
         gitevents: use
-        target-prompt: "Faça a triagem do incidente registrado e decida se ele procede e com que urgência, sem ainda investigar a causa.\n\nFaça:\n- Confirme que o problema é real e evidencie ou reproduza sua manifestação; distinga bug de erro de configuração, de operação ou de uso incorreto.\n- Dimensione o impacto (usuários afetados, perda financeira, risco a dados/SLA) e classifique a severidade conforme a tabela do template.\n- Verifique se há workaround imediato que reduza o dano enquanto a correção não chega, e registre-o.\n- Onde faltar dado para decidir, pergunte e sinalize com 'need_human'; não superestime nem subestime por conveniência.\n\nPreencha APENAS o capítulo 'Triagem' (classificação, severidade, prioridade, workaround). Não proponha correção nem investigue causa-raiz.\n\nResultado: incidente confirmado, dimensionado e priorizado, pronto para a análise técnica. Avance para advance."
+        target-prompt: |-
+          Ter o incidente confirmado, dimensionado e priorizado, pronto para a análise técnica.
+        step-prompt: |-
+          - Confirme que o problema é real e evidencie ou reproduza sua manifestação; distinga bug de erro de configuração, operação ou uso incorreto.
+          - Dimensione o impacto (usuários, perda financeira, risco a dados/SLA) e classifique a severidade conforme a tabela do template.
+          - Verifique e registre workaround imediato que reduza o dano enquanto a correção não chega.
+          - Onde faltar dado, pergunte e sinalize com 'need_human'; não superestime nem subestime por conveniência.
+          - Preencha APENAS o capítulo 'Triagem' (classificação, severidade, prioridade, workaround). Não proponha correção nem investigue causa-raiz.
         change:
           advance: analise-tecnica
           cancelar: cancelado
@@ -490,14 +708,28 @@ boards:
         name: "Análise Técnica"
         agent: architecture
         gitevents: use
-        target-prompt: "Investigue o incidente até compreender a causa e o custo de corrigi-la, sem ainda decidir o tratamento.\n\nFaça:\n- Examine logs, métricas, traces, histórico de deploys e mudanças recentes correlacionadas à janela do incidente; persiga evidência, não palpite.\n- Determine a causa provável e a cadeia que leva do defeito ao sintoma; separe causa de consequência.\n- Avalie o risco de manter e o risco de intervir, se há workaround sustentável e a ordem de esforço de uma correção pontual.\n- Se a evidência for insuficiente para concluir, diga o que falta e sinalize com 'need_human' em vez de afirmar sem base.\n\nPreencha o capítulo 'Análise técnica' com os achados, a causa e o raciocínio que os sustenta. Não abra hotfix nem escolha o caminho de tratamento aqui.\n\nResultado: diagnóstico que permita decidir o tratamento com fundamento. Avance para advance."
+        target-prompt: |-
+          Ter um diagnóstico do incidente que permita decidir o tratamento com fundamento (causa e custo de corrigir).
+        step-prompt: |-
+          - Examine logs, métricas, traces, histórico de deploys e mudanças recentes correlacionadas à janela do incidente; persiga evidência, não palpite.
+          - Determine a causa provável e a cadeia do defeito ao sintoma; separe causa de consequência.
+          - Avalie o risco de manter e de intervir, se há workaround sustentável e a ordem de esforço de uma correção pontual.
+          - Se a evidência for insuficiente, diga o que falta e sinalize com 'need_human' em vez de afirmar sem base.
+          - Preencha o capítulo 'Análise técnica' com achados, causa e raciocínio. Não abra hotfix nem escolha o tratamento aqui.
         change:
           advance: decisao-tratamento
       decisao-tratamento:
         name: "Decisão de tratamento"
         agent: tech-lead
         gitevents: use
-        target-prompt: "Decida o tratamento do incidente com base nas análises. Esta etapa decide, não executa: a correção é realizada por hotfixes independentes no board 'hotfix'.\n\nFaça:\n- Releia registro, triagem e análise técnica e confronte-os com a documentação, as especificações e as políticas (internas e externas).\n- Escolha um caminho e o materialize:\n  - Correção imediata: abra de 1 a 3 hotfixes (idealmente 1) no board 'hotfix', na coluna de entrada, cada um seguindo `contexts/templates/issues/hotfix.md`. Cada hotfix resolve um defeito específico e delimitado — o objetivo é estancar o sangramento, não reescrever arquitetura. No corpo de cada hotfix anote '/blocks #<id deste incidente>' (a esteira sincroniza o bloqueio recíproco e pausa este incidente até a correção concluir) e preencha as Referências com a branch de origem (main).\n  - Cancelar: quando não há ação corretiva justificável.\n- Se a solução exigiria mais de 3 hotfixes ou tocar arquitetura, ela não é hotfix: anote-a como candidata a melhoria para o postmortem tratar e não a abra agora.\n\nRegistre a decisão e a lista de hotfixes (ou a justificativa do cancelamento) no capítulo 'Ação proposta'. Não abra épicos nem tasks aqui.\n\nResultado: caminho de tratamento decidido e materializado em hotfixes bloqueantes, ou incidente justificadamente cancelado. Avance para advance (correção) ou para cancelar."
+        target-prompt: |-
+          Ter o tratamento do incidente decidido e materializado — em 1 a 3 hotfixes bloqueantes, ou incidente justificadamente cancelado. (Decide, não executa a correção.)
+        step-prompt: |-
+          - Releia registro, triagem e análise técnica e confronte-os com a documentação, especificações e políticas (internas e externas).
+          - Correção imediata: abra de 1 a 3 hotfixes (idealmente 1) no board 'hotfix' (coluna de entrada), cada um seguindo `hotfix.md`, resolvendo um defeito específico e delimitado (estancar o sangramento, não reescrever arquitetura). Em cada hotfix, faça-o bloquear este incidente e defina sua branch de origem (`branch pai`) como `main`.
+          - Cancelar: quando não há ação corretiva justificável.
+          - Se a solução exigiria mais de 3 hotfixes ou tocar arquitetura, não é hotfix: anote-a como candidata a melhoria para o postmortem e não a abra agora.
+          - Registre a decisão e a lista de hotfixes (ou a justificativa do cancelamento) no capítulo 'Ação proposta'. Não abra épicos nem tasks aqui.
         change:
           advance: aguardando-hotfix
           cancelar: cancelado
@@ -505,7 +737,12 @@ boards:
         name: "Aguardando Hotfix"
         agent: generic
         gitevents: use
-        target-prompt: "Mantenha o incidente pausado enquanto houver correção pontual em andamento, conferindo o progresso sem interferir nos hotfixes.\n\nFaça:\n- Identifique os hotfixes vinculados (os que apontam '/blocks' para esta issue, listados em 'Ação proposta').\n- Se algum ainda estiver ativo, garanta que este incidente permaneça bloqueado por ele ('/blocked_by #<id>') e não avance.\n- Só quando todos os hotfixes estiverem concluídos, libere o incidente.\n\nNão altere código, não reabra a decisão, não crie novos hotfixes aqui.\n\nResultado: incidente retido até a correção estar em produção e então liberado para a verificação humana. Avance para advance quando não restar hotfix ativo."
+        target-prompt: |-
+          Manter o incidente pausado enquanto houver hotfix em andamento, sem interferir nos hotfixes.
+        step-prompt: |-
+          - Confira, na "Ação proposta", os hotfixes que este incidente abriu.
+          - Para cada hotfix ainda aberto que não esteja bloqueando o incidente, adicione o id dele em `/blocked_by` deste incidente (o hotfix já tem id).
+          - Enquanto houver hotfix aberto, não avance; quando todos concluírem, avance.
         change:
           advance: monitoramento
       monitoramento:
@@ -518,20 +755,38 @@ boards:
         name: "Reavaliação"
         agent: architecture
         gitevents: use
-        target-prompt: "A validação humana concluiu que a correção pontual não resolveu o incidente. Reabra o raciocínio à luz dessa falha, sem repetir o que já não funcionou.\n\nFaça:\n- Levante o que foi tentado, por que se esperava que resolvesse e por que não resolveu; incorpore qualquer sintoma novo observado no monitoramento.\n- Revise a hipótese de causa: se ela caiu, proponha a próxima; se persiste, aponte por que a correção anterior foi insuficiente.\n- Atualize o capítulo 'Análise técnica' com a nova evidência e conclusão, preservando o histórico do que falhou.\n\nNão abra hotfix aqui — isso é papel da decisão de tratamento.\n\nResultado: análise atualizada que sustente uma nova decisão de tratamento mais certeira. Avance para advance."
+        target-prompt: |-
+          Ter a análise técnica atualizada à luz da falha da correção anterior, sustentando uma nova decisão de tratamento mais certeira.
+        step-prompt: |-
+          - Levante o que foi tentado, por que se esperava que resolvesse e por que não resolveu; incorpore sintomas novos do monitoramento.
+          - Revise a hipótese de causa: se caiu, proponha a próxima; se persiste, aponte por que a correção anterior foi insuficiente.
+          - Atualize o capítulo 'Análise técnica' com a nova evidência e conclusão, preservando o histórico do que falhou.
+          - Não abra hotfix aqui — é papel da decisão de tratamento.
         change:
           advance: decisao-tratamento
       concluido:
         name: "Concluído"
         agent: tech-lead
         gitevents: merge
-        target-prompt: "O incidente foi mitigado e a correção validada pelo humano. Encerre o caso e dispare a fase de aprendizado.\n\nFaça:\n- Remova todas as relações de bloqueio ainda presentes nesta issue.\n- Consolide o documento do incidente e faça o merge da branch de documentação para a main (abra o MR e conclua), garantindo que o histórico do caso fique versionado.\n- Inicie o postmortem: crie a issue no board 'postmortem', na coluna de entrada, referenciando este incidente (#<id>) e o diretório `doc/incidente/<slug>/`, para que a análise blameless continue sobre o mesmo caso.\n\nResultado: incidente encerrado, com documentação em produção e postmortem aberto. Avance para advance."
+        target-prompt: |-
+          Ter o incidente encerrado — documentação em produção e postmortem aberto sobre o mesmo caso.
+        step-prompt: |-
+          - Remova todas as relações de bloqueio ainda presentes nesta issue.
+          - Consolide o documento do incidente e faça o merge da branch de documentação para a main (abra o MR e conclua), versionando o histórico do caso.
+          - Abra o postmortem no board 'postmortem' (coluna de entrada), referenciando este incidente (#<id>) e o diretório `doc/incidente/<slug>/`.
+        on_out: [completed]
         change:
           advance: encerrado
       cancelado:
         name: "Cancelado"
         agent: generic
-        target-prompt: "O incidente foi descartado (sem ação corretiva ou por não proceder). Encerre-o sem deixar resíduo.\n\nFaça:\n- Remova todas as relações de bloqueio desta issue.\n- Se houver hotfixes vinculados que perderam o propósito, mova-os para 'cancelado' em seus boards.\n- Remova a branch de documentação (local e remota) se não houver conteúdo a preservar.\n\nResultado: incidente cancelado e limpo, sem bloqueios órfãos nem branches soltas. Avance para advance."
+        target-prompt: |-
+          Ter o incidente cancelado e limpo — sem bloqueios órfãos nem branches soltas.
+        step-prompt: |-
+          - Remova todas as relações de bloqueio desta issue.
+          - Se houver hotfixes vinculados que perderam o propósito, mova-os para 'cancelado' nos seus boards.
+          - Remova a branch de documentação (local e remota) se não houver conteúdo a preservar.
+        on_out: [not_planned]
         change:
           advance: encerrado
       encerrado:
@@ -541,6 +796,7 @@ boards:
 
   hotfix:
     name: "Pipe - Hotfix"
+    desc: "Correção pontual e cirúrgica em produção"
     priority: 0
     flow: hotfix
     todo: backlog
@@ -554,14 +810,27 @@ boards:
         name: "Correção"
         agent: engineering-sr
         gitevents: create
-        target-prompt: "Implemente a correção pontual descrita nesta issue, estancando o sangramento com o menor toque possível.\n\nFaça:\n- Trabalhe na branch desta issue, criada a partir da main; não use outra.\n- Reproduza o defeito, corrija exatamente a causa do sintoma e nada além disso — sem refatorar, generalizar ou reescrever arquitetura (isso é papel de épico, não de hotfix).\n- Cubra a correção com teste que falhe sem o fix e passe com ele, protegendo contra regressão.\n- Faça commit e push da branch. Não mescle nesta etapa.\n\nSe perceber que a correção correta exige mudança ampla ou estrutural, não a force aqui: registre a limitação em comentário e sinalize, pois o caso pode ter sido subdimensionado.\n\nResultado: correção mínima, testada e publicada na branch, pronta para o reteste. Avance para advance."
+        target-prompt: |-
+          Ter a correção mínima do hotfix testada e publicada na branch, pronta para o reteste.
+        step-prompt: |-
+          - Trabalhe na branch de trabalho deste hotfix (criada a partir da `main`); não use outra.
+          - Reproduza o defeito e corrija exatamente a causa do sintoma, nada além — sem refatorar, generalizar ou reescrever arquitetura (isso é épico, não hotfix).
+          - Cubra a correção com teste que falhe sem o fix e passe com ele (protege contra regressão).
+          - Faça commit e push da branch; não mescle nesta etapa.
+          - Se a correção correta exigir mudança ampla/estrutural, não a force: registre a limitação em comentário e sinalize.
         change:
           advance: reteste
       reteste:
         name: "Reteste"
         agent: quality
         gitevents: use
-        target-prompt: "Valide, de forma independente, que a correção resolve o defeito sem introduzir regressão.\n\nFaça:\n- Na branch desta issue, execute os casos de teste pertinentes ao defeito e os testes de regressão do entorno afetado.\n- Registre os resultados conforme `contexts/templates/docs/test-results.md`, com evidência do antes/depois.\n- Aprovado: avance para advance. Reprovado ou parcialmente reprovado: avance para falha, indicando objetivamente o que não passou.\n\nNão altere código nem crie/edite casos de teste — se os casos estiverem inadequados, aponte isso na reprovação.\n\nResultado: veredito de teste rastreável sobre a correção. Avance conforme o resultado."
+        target-prompt: |-
+          Ter um veredito de teste rastreável sobre a correção do hotfix (resolve o defeito sem regressão, ou reprovado).
+        step-prompt: |-
+          - Na branch de trabalho, execute os casos de teste pertinentes ao defeito e os testes de regressão do entorno afetado.
+          - Registre os resultados conforme `test-results.md`, com evidência do antes/depois.
+          - Aprovado: avance. Reprovado ou parcialmente reprovado: avance para falha, indicando o que não passou.
+          - Não altere código nem crie/edite casos de teste; se inadequados, aponte na reprovação.
         change:
           advance: pre-prod
           falha: correcao
@@ -569,7 +838,13 @@ boards:
         name: "Pré produção"
         agent: tech-lead
         gitevents: use
-        target-prompt: "Prepare a branch do hotfix para o ritual de produção, reduzindo o risco de o merge agravar o incidente.\n\nFaça:\n- Traga a main para a branch do hotfix (merge) e resolva os conflitos, deixando a branch coerente com o estado atual de produção.\n- Verifique que a correção continua presente e íntegra após a integração.\n- Descreva ao humano, de forma objetiva e curta, o que muda e o que será implantado, para embasar a homologação.\n\nMantenha o preparo enxuto — é um hotfix, não um épico; não monte ambiente elaborado além do necessário para validar a mudança.\n\nResultado: branch pareada com a main, íntegra e com um resumo claro do que vai a produção. Avance para advance."
+        target-prompt: |-
+          Ter a branch do hotfix pareada com a main, íntegra, e um resumo claro do que vai a produção — pronta para a homologação.
+        step-prompt: |-
+          - Traga a `main` para a branch do hotfix (merge) e resolva os conflitos, deixando-a coerente com produção.
+          - Verifique que a correção continua presente e íntegra após a integração.
+          - Descreva ao humano, objetiva e curta, o que muda e o que será implantado.
+          - Mantenha enxuto — é hotfix, não épico.
         change:
           advance: homologacao
       homologacao:
@@ -581,33 +856,59 @@ boards:
         name: "Documentação"
         agent: tech-lead
         gitevents: use
-        target-prompt: "Registre no repositório o que a correção altera, na medida que um hotfix exige — nem mais, nem menos.\n\nFaça:\n- Atualize a versão, o README, as documentações públicas e os change files afetados, refletindo a correção entregue.\n- Escreva do ponto de vista de quem usa ou opera, deixando claro o que muda no comportamento.\n\nComo a documentação precisa entrar na main junto da correção, ela é feita antes do merge; mantenha-a proporcional ao escopo do hotfix.\n\nResultado: documentação enxuta e fiel à correção, pronta para ir à main. Avance para advance."
+        target-prompt: |-
+          Ter a documentação da correção atualizada e proporcional ao hotfix, pronta para ir à main.
+        step-prompt: |-
+          - Atualize versão, README, documentações públicas e change files afetados, refletindo a correção.
+          - Escreva do ponto de vista de quem usa ou opera, deixando claro o que muda no comportamento.
+          - Mantenha proporcional ao escopo do hotfix.
         change:
           advance: merge-request
       merge-request:
         name: "Merge Request"
         agent: generic
         gitevents: merge
-        target-prompt: "Abra o pedido de integração da correção para a main.\n\nFaça:\n- Abra o merge request da branch do hotfix para a main, com título e descrição que resumam o defeito e a correção.\n- Se já existir um MR aberto para esta branch (caso de retrabalho), não crie outro: confirme que ele reflete os commits atuais e prossiga.\n\nNão conclua o merge nesta etapa — isso é papel do code review.\n\nResultado: MR aberto e atualizado, pronto para revisão. Avance para advance."
+        target-prompt: |-
+          Ter o MR da correção aberto e atualizado (branch do hotfix → `main`), pronto para revisão.
+        step-prompt: |-
+          - Abra o MR da branch do hotfix para a `main`, com título e descrição que resumam o defeito e a correção.
+          - Se já houver MR aberto para esta branch (retrabalho), não crie outro: confirme que reflete os commits atuais e prossiga.
+          - Não conclua o merge aqui — é papel do code review.
         change:
           advance: code-review
       code-review:
         name: "Code Review"
         agent: reviewer
-        target-prompt: "Revise a correção como o último portão antes da produção, com rigor proporcional ao fato de que ela entra direto na main.\n\nFaça:\n- Verifique boas práticas, aderência ao defeito relatado, ausência de delírio ou escopo inflado, se compila e se a cobertura de teste protege contra regressão.\n- Confirme que continua sendo uma correção pontual e não uma refatoração disfarçada; hotfix que cresceu demais deve ser barrado.\n- Aprovado: conclua o merge na main, exclua a branch e avance para advance.\n- Reprovado: adicione a label 'retrabalho', anote objetivamente o que impede a aprovação e avance para correcao. Ao reanalisar, não remova a tag 'retrabalho'.\n\nResultado: correção em produção com qualidade verificada, ou devolvida com apontamentos claros. Avance conforme o veredito."
+        target-prompt: |-
+          Servir de último portão antes da produção: se aprovada, correção na main; se reprovada, devolvida à correção com apontamentos.
+        step-prompt: |-
+          - Revise com rigor (entra direto na main): boas práticas, aderência ao defeito relatado, ausência de delírio ou escopo inflado, se compila, e se a cobertura protege contra regressão.
+          - Confirme que continua sendo correção pontual e não refatoração disfarçada; hotfix que cresceu demais deve ser barrado.
+          - Aprovado: conclua o merge na main, exclua a branch e avance.
+          - Reprovado: adicione a label 'retrabalho', anote o que impede a aprovação e avance para correcao.
+          - Ao reanalisar, não remova a label 'retrabalho'.
         change:
           advance: concluido
           correcao: correcao
       concluido:
         name: "Concluído"
         agent: generic
-        target-prompt: "A correção está em produção. Encerre o hotfix e libere o incidente que dependia dele.\n\nFaça:\n- Remova todas as relações de bloqueio desta issue; a remoção do '/blocks' faz a esteira desbloquear o incidente vinculado.\n\nResultado: hotfix concluído e incidente liberado para verificação. Avance para advance."
+        target-prompt: |-
+          Ter o hotfix concluído e o incidente vinculado liberado.
+        step-prompt: |-
+          - Remova todas as relações de bloqueio desta issue (remover o bloqueio libera o incidente vinculado).
+        on_out: [completed]
         change:
           advance: encerrado
       cancelado:
         name: "Cancelado"
         agent: generic
-        target-prompt: "O hotfix perdeu o propósito (incidente cancelado, correção descartada ou superada). Encerre-o sem deixar resíduo.\n\nFaça:\n- Remova todas as relações de bloqueio desta issue, liberando o que dependia dela.\n- Remova a branch local e remota.\n\nResultado: hotfix cancelado e limpo, sem bloqueios órfãos nem branch solta. Avance para advance."
+        target-prompt: |-
+          Ter o hotfix cancelado e limpo — sem bloqueios órfãos nem branch solta.
+        step-prompt: |-
+          - Remova todas as relações de bloqueio desta issue, liberando o que dependia dela.
+          - Remova a branch (local e remota).
+        on_out: [not_planned]
         change:
           advance: encerrado
       encerrado:
@@ -617,6 +918,7 @@ boards:
 
   postmortem:
     name: "Pipe - Postmortem"
+    desc: "Análise blameless pós-incidente"
     priority: 10
     flow: docs
     todo: aberto
@@ -629,21 +931,39 @@ boards:
         name: "Coleta"
         agent: tech-lead
         gitevents: create
-        target-prompt: "Construa a base factual do postmortem, de forma blameless, para que a análise de causa se apoie em fatos e não em memória.\n\nFaça:\n- No diretório `doc/incidente/<slug>/` (mesmo caso do incidente), na branch de documentação criada a partir da main, consolide: sumário do ocorrido, impacto (quem e o quê foram afetados, por quanto tempo, escopo em usuários/receita/SLA) e como o problema foi detectado.\n- Monte a linha do tempo com timestamps (detecção -> escalonamento -> mitigação -> resolução), cruzando o ticket do incidente, o histórico dos hotfixes e os registros de logs/deploys.\n- Calcule as métricas de resposta: tempo até detectar (TTD), tempo até mitigar (TTM) e tempo até resolver (MTTR).\n\nDescreva fatos e sequência, não culpados; não conclua causa nem proponha ação ainda.\n\nResultado: cronologia e impacto factuais, suficientes para investigar a causa sem reconstruir o incidente. Avance para advance."
+        target-prompt: |-
+          Ter a base factual do postmortem — cronologia, impacto e métricas — suficiente para investigar a causa sem reconstruir o incidente.
+        step-prompt: |-
+          - No diretório `doc/incidente/<slug>/` (mesmo caso), na branch de documentação (a partir da main), consolide: sumário, impacto (quem/o quê, por quanto tempo, usuários/receita/SLA) e como foi detectado.
+          - Monte a linha do tempo com timestamps (detecção → escalonamento → mitigação → resolução), cruzando ticket, hotfixes e logs/deploys.
+          - Calcule TTD, TTM e MTTR.
+          - Descreva fatos e sequência, não culpados; não conclua causa nem proponha ação ainda.
         change:
           advance: causa-raiz
       causa-raiz:
         name: "Causa-raiz"
         agent: engineering-sr
         gitevents: use
-        target-prompt: "Determine por que o incidente foi possível, de forma blameless — o foco é o sistema e o processo, nunca as pessoas.\n\nFaça:\n- A partir da linha do tempo, aplique os 5 Porquês para ir do sintoma às condições que o permitiram.\n- Identifique os fatores contribuintes; assuma que raramente há causa única e resista a parar no primeiro culpado técnico.\n- Distinga a causa que originou o incidente do que apenas o amplificou ou atrasou a resposta.\n\nRegistre a causa-raiz e os fatores contribuintes no documento, com o encadeamento que os sustenta.\n\nResultado: entendimento causal que explique a ocorrência e sirva de base para ações que a impeçam de repetir. Avance para advance."
+        target-prompt: |-
+          Ter o entendimento causal (causa-raiz e fatores contribuintes) que sustente ações para impedir a recorrência.
+        step-prompt: |-
+          - A partir da linha do tempo, aplique os 5 Porquês do sintoma às condições que o permitiram.
+          - Identifique os fatores contribuintes; raramente há causa única — resista a parar no primeiro culpado técnico.
+          - Distinga a causa que originou do que apenas amplificou/atrasou a resposta.
+          - Registre causa-raiz e fatores no documento, com o encadeamento. Blameless: foco em sistema/processo, nunca pessoas.
         change:
           advance: licoes-acoes
       licoes-acoes:
         name: "Lições e Ações"
         agent: tech-lead
         gitevents: use
-        target-prompt: "Traduza a análise em aprendizado e em ações concretas que reduzam a chance e o custo de recorrência.\n\nFaça:\n- Registre o balanço honesto: o que funcionou, o que falhou e onde apenas tivemos sorte.\n- Proponha ações corretivas objetivas e acionáveis, cada uma endereçando um fator contribuinte, categorizadas por intenção: prevenir a recorrência, melhorar a detecção e melhorar a resposta.\n- Deixe claro quais ações exigem mudança estrutural — essas virarão épicos após a revisão humana.\n\nNão crie épicos ainda; a criação depende do aval humano na revisão.\n\nResultado: lições registradas e um conjunto de ações claras o bastante para virar épicos sem reinterpretação. Avance para advance."
+        target-prompt: |-
+          Ter as lições registradas e ações corretivas claras o bastante para virar épicos sem reinterpretação.
+        step-prompt: |-
+          - Registre o balanço honesto: o que funcionou, o que falhou e onde só tivemos sorte.
+          - Proponha ações objetivas e acionáveis, cada uma endereçando um fator contribuinte, categorizadas por: prevenir recorrência, melhorar detecção, melhorar resposta.
+          - Marque quais exigem mudança estrutural (virarão épicos após a revisão humana).
+          - Não crie épicos ainda.
         change:
           advance: revisao
       revisao:
@@ -656,27 +976,49 @@ boards:
         name: "Criação de Melhorias"
         agent: product
         gitevents: use
-        target-prompt: "As ações corretivas foram validadas na revisão; transforme as que exigem mudança estrutural em épicos independentes.\n\nFaça:\n- Para cada ação aprovada, crie um épico no board 'epic', na coluna de entrada, seguindo `contexts/templates/issues/epic.md`, com contexto suficiente para o épico ser conduzido sem consultar o incidente.\n- No corpo de cada épico anote '/blocks #<id deste postmortem>' — a esteira sincroniza o bloqueio recíproco, mantendo o postmortem em espera até a melhoria concluir.\n- Registre no documento do postmortem os épicos criados e a ação que cada um endereça.\n\nNão trate os épicos como filhos do postmortem: eles nascem dele, mas seguem vida própria.\n\nResultado: melhorias materializadas em épicos rastreáveis e bloqueantes. Avance para advance."
+        target-prompt: |-
+          Ter as ações estruturais aprovadas materializadas em épicos independentes, rastreáveis e bloqueando o postmortem.
+        step-prompt: |-
+          - Para cada ação aprovada, crie um épico no board 'epic' (coluna de entrada) seguindo `epic.md`, com contexto suficiente para ser conduzido sem consultar o incidente.
+          - Em cada épico, faça-o bloquear este postmortem (mantém o postmortem em espera até a melhoria concluir).
+          - Registre no documento do postmortem os épicos criados e a ação que cada um endereça.
+          - Não trate os épicos como filhos do postmortem: nascem dele, mas seguem vida própria.
         change:
           advance: aguardando-melhorias
       aguardando-melhorias:
         name: "Aguardando Melhorias"
         agent: generic
         gitevents: use
-        target-prompt: "Mantenha o postmortem em espera enquanto as melhorias não concluem, conferindo o avanço sem interferir nos épicos.\n\nFaça:\n- Identifique os épicos de melhoria vinculados (os que apontam '/blocks' para esta issue).\n- Se algum ainda estiver ativo, garanta que o postmortem permaneça bloqueado por ele ('/blocked_by #<id>') e não avance.\n- Só quando todos os épicos concluírem, libere o postmortem para o fechamento.\n\nNão execute as melhorias aqui nem reabra a análise.\n\nResultado: postmortem retido até o aprendizado virar mudança concluída e então liberado. Avance para advance quando não restar épico ativo."
+        target-prompt: |-
+          Manter o postmortem em espera enquanto houver épico de melhoria em andamento, sem interferir nos épicos.
+        step-prompt: |-
+          - Confira, no documento do postmortem, os épicos de melhoria que ele abriu.
+          - Para cada épico ainda aberto que não esteja bloqueando o postmortem, adicione o id dele em `/blocked_by` deste postmortem (o épico já tem id).
+          - Enquanto houver épico aberto, não avance; quando todos concluírem, avance.
         change:
           advance: concluido
       concluido:
         name: "Concluído"
         agent: tech-lead
         gitevents: merge
-        target-prompt: "As melhorias foram concluídas (ou não havia ação a tomar). Feche o postmortem consolidando o aprendizado.\n\nFaça:\n- Finalize a análise no documento, registrando o resultado das melhorias entregues e confirmando que os fatores contribuintes foram endereçados (ou por que conscientemente não foram).\n- Remova todas as relações de bloqueio desta issue.\n- Faça o merge da branch de documentação do postmortem para a main (abra o MR e conclua), deixando o caso encerrado e versionado.\n\nResultado: postmortem completo em produção, fechando o ciclo do incidente. Avance para advance."
+        target-prompt: |-
+          Ter o postmortem completo em produção, fechando o ciclo do incidente.
+        step-prompt: |-
+          - Finalize a análise: resultado das melhorias e confirmação de que os fatores contribuintes foram endereçados (ou por que conscientemente não foram).
+          - Remova todas as relações de bloqueio desta issue.
+          - Faça o merge da branch de documentação do postmortem para a main (abra o MR e conclua).
+        on_out: [completed]
         change:
           advance: encerrado
       cancelado:
         name: "Cancelado"
         agent: generic
-        target-prompt: "O postmortem foi descartado. Encerre-o sem deixar resíduo.\n\nFaça:\n- Remova todas as relações de bloqueio desta issue.\n- Remova a branch de documentação (local e remota) se não houver conteúdo a preservar.\n\nResultado: postmortem cancelado e limpo, sem bloqueios órfãos nem branch solta. Avance para advance."
+        target-prompt: |-
+          Ter o postmortem cancelado e limpo — sem bloqueios órfãos nem branch solta.
+        step-prompt: |-
+          - Remova todas as relações de bloqueio desta issue.
+          - Remova a branch de documentação (local e remota) se não houver conteúdo a preservar.
+        on_out: [not_planned]
         change:
           advance: encerrado
       encerrado:
