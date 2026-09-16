@@ -97,7 +97,7 @@ boards:
     name: "Pipe - Epics"
     desc: "Épicos: negócio → requisitos → arquitetura → stories"
     todo: backlog
-    priority: 1
+    priority: 5
     flow: epic
     parallel: true
     columns:
@@ -274,12 +274,12 @@ boards:
         on_in: [archive]
         on_out: [-archive]
   
-  
   story:
     name: "Pipe - User Stories"
     desc: "User stories: planejamento técnico → tasks → integração"
     todo: backlog
-    priority: 2
+    priority: 4
+    parallel: false
     flow: story
     columns:
       backlog:
@@ -374,7 +374,8 @@ boards:
     name: "Pipe - Tasks"
     desc: "Unidade de desenvolvimento: teste → dev → review"
     todo: backlog
-    priority: 5
+    priority: 2
+    parallel: false
     flow: feature
     columns:
       backlog:
@@ -489,8 +490,8 @@ boards:
     name: "Pipe - Bugs"
     desc: "Defeitos achados em teste/review"
     todo: backlog
-    priority: 4
-    # sem flow: branch de origem/correção vêm das Referências da issue
+    priority: 1
+    parallel: false
     columns:
       backlog:
         name: Backlog
@@ -583,9 +584,9 @@ boards:
   debito:
     name: "Pipe - Débitos"
     desc: "Lacunas de definição (negocial/arquitetural/humana)"
-    priority: 3
-    # sem flow: branch de origem/correção vêm da issue (/parent_branch, /branch) — modelo dinâmico
+    priority: 0
     todo: humano
+    parallel: false
     columns:
       humano:
         name: "Humano"
@@ -667,7 +668,8 @@ boards:
   incidente:
     name: "Pipe - Incidente"
     desc: "Coordenação de incidente em produção"
-    priority: 1
+    priority: 3
+    parallel: false
     flow: docs
     todo: reportado
     columns:
@@ -798,6 +800,7 @@ boards:
     name: "Pipe - Hotfix"
     desc: "Correção pontual e cirúrgica em produção"
     priority: 0
+    parallel: false
     flow: hotfix
     todo: backlog
     columns:
