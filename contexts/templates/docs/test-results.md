@@ -2,12 +2,12 @@
 
 ## Utilidade
 
-Registra o resultado da execução dos casos de teste. Serve como evidência de qualidade e insumo para decisão de aprovação ou rejeição da task.
+Registra o resultado da execução dos casos de teste de uma entrega (suíte pytest). Serve como evidência de qualidade e insumo para a decisão de avançar, devolver ao desenvolvimento (falha de código) ou revisar os casos de teste.
 
 ## Layout de Documentação
 
 ```markdown
-# Resultados de Teste — <título da task>
+# Resultados de Teste — <título da entrega>
 
 Status: draft | approved
 Owner: quality
@@ -15,7 +15,7 @@ Last updated: YYYY-MM-DD
 
 ## Inputs
 - <test-cases utilizado>
-- <task relacionada>
+- <issue relacionada (#id)>
 
 ## CT-001 — <título>
 
@@ -30,8 +30,11 @@ Last updated: YYYY-MM-DD
 - Passou: X
 - Falhou: X
 - Bloqueado: X
+
+## Veredito
+aprovado | reprovado | parcialmente reprovado
 ```
 
 ## Caminho do Arquivo
 
-`doc/quality/<slug-story>/test-results-<slug-task>.md`
+`doc/quality/<slug-issue>/test-results.md`
