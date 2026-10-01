@@ -18,9 +18,6 @@ git:
 
   flow:
     base: main
-
-    # Fluxo único e plano: uma branch por issue, sempre da main para a main.
-    # Não há épico/story/parent — cada issue é uma entrega independente.
     feature:
       prefix: feature
       branch_pattern: "feature/<id>-<slug>"
@@ -31,23 +28,18 @@ git:
 
 agents:
   kiro-cli:
-    # Planejamento técnico + escopo (fecha o "o quê", não o "como").
     tech-lead:
       name: Isabela Gomes - Tech Lead
       model: claude-sonnet-5
-    # Casos de teste e execução de testes (pytest).
     quality:
       name: Camila Rocha - Engenheira de Qualidade (QA)
       model: claude-sonnet-5
-    # Desenvolvimento (agente único; ver nota de complexidade no fim do arquivo).
     engineering-pl:
       name: Sofia Carvalho - Engenheira de Software PL
       model: auto
-    # Portão de qualidade antes da main.
     reviewer:
       name: Bruno Ferreira - Engenheiro de Software SR
       model: claude-sonnet-5
-    # Operações: abre MR, escreve resumo, limpa cancelamentos.
     generic:
       name: Diego Santos - Analista de Operações
       model: claude-haiku-4.5
@@ -80,7 +72,7 @@ boards:
           - Leia o corpo da issue e o histórico; identifique a mudança pedida no motor da esteira, o resultado esperado e o que muda para quem opera ou usa a esteira.
           - Onde faltar informação essencial para saber o que construir, pergunte pelo history/addcomment e sinalize a espera com `need_human`; não preencha lacunas por suposição.
           - Feche o escopo (o "o quê") e escreva os critérios de aceitação no padrão Dado/Quando/Então, testáveis isoladamente.
-          - Reescreva o corpo da issue conforme o template `entrega.md`, refletindo o escopo acordado e os critérios de aceitação.
+          - Reescreva o corpo da issue conforme o template `entrega.md`, refletindo o escopo acordado e os critérios de aceitação; mantenha o campo Branch como `(ainda não criada)` — quem cria a branch é a coluna Casos de Teste.
           - Não defina detalhes de implementação nem arquitetura, não crie testes, não escreva código. Prefira o simples que resolve — não amplie o escopo além do pedido.
         change:
           advance: casos-de-teste
@@ -95,7 +87,7 @@ boards:
           - Analise a issue e os critérios de aceitação; avalie os testes já existentes na suíte (`tests/`) antes de criar novos.
           - Especifique os casos de teste cobrindo os cenários dos critérios de aceitação (principais e alternativos), seguindo o template `test-cases.md`.
           - Os testes são da suíte Python do motor (pytest, em `tests/`); descreva-os de forma que o desenvolvimento os implemente sem ambiguidade. Faça exclusivamente o que o escopo pede.
-          - Em dúvida simples, pergunte via chat/history e sinalize com `need_human`. Se o escopo estiver incompleto ou contraditório, devolva ao planejamento avançando para revisar-escopo.
+          - Se o escopo estiver incompleto ou contraditório para derivar os casos, devolva ao planejamento avançando para revisar-escopo. Fora isso, é seu trabalho: decida com os critérios de aceitação e a suíte existente — não pare a esteira por dúvida que você mesmo resolve.
         change:
           advance: desenvolvimento
           revisar-escopo: planejamento
@@ -110,7 +102,7 @@ boards:
           - Analise a issue e os casos de teste criados; trabalhe em TDD quando possível.
           - Implemente exatamente o que foi solicitado no motor da esteira (`src/`), respeitando a arquitetura hexagonal existente (core/adapters), e cubra os novos códigos com testes em `tests/`.
           - Rode a suíte (`python -m pytest`) e garanta que os testes relacionados passam antes de avançar. Não faça mais do que o escopo pede.
-          - Dúvida sobre os casos de teste: devolva ao QA avançando para revisar-caso-de-teste. Dúvida simples: pergunte via chat e sinalize com `need_human`.
+          - Dúvida sobre os casos de teste: devolva ao QA avançando para revisar-caso-de-teste.
         change:
           advance: execucao-testes
           revisar-caso-de-teste: casos-de-teste
@@ -179,16 +171,22 @@ boards:
           Ter, no addcomment da issue, um resumo claro e conciso da entrega — pronto para o dono ler antes do encerramento.
         step-prompt: |-
           - Escreva no addcomment: o que mudou no motor, os critérios de aceitação atendidos, o resultado dos testes, a nova versão e onde ver a documentação.
-          - Sinalize `need_human` para que o dono leia o resumo antes do encerramento.
           - Não altere código nem documentação nesta etapa.
         change:
-          advance: concluido
+          advance: em-producao
+
+      em-producao:
+        name: "Em produção"
+        on_in: [need_human]
+        on_out: [-need_human]
 
       concluido:
         name: "Concluído"
         agent: generic
         target-prompt: |-
           A issue sem nenhuma relação de bloqueio, liberando quem dependia dela.
+        step-prompt: |-
+          - Remova todas as relações de bloqueio desta issue, liberando quem dependia dela.
         on_out: [completed]
         change:
           advance: encerrado
@@ -209,29 +207,3 @@ boards:
         name: "Encerrado"
         on_in: [archive]
         on_out: [-archive]
-
-# --------------------------------------------------------------------------
-# Notas da proposta (board único — ideia do financeiro + estilo escrevas)
-# --------------------------------------------------------------------------
-# - Fluxo: backlog → planejamento → casos-de-teste → desenvolvimento →
-#   execucao-testes → documentacao → merge-request → code-review →
-#   resumo-entrega → concluido → encerrado (+ cancelado).
-# - "Estilo escrevas" aplicado: prompts em target-prompt (resultado) +
-#   step-prompt (passos); ciclo de QA com devolução (revisar-caso-de-teste /
-#   falha); portão de code-review antes da main; fecho via label
-#   (completed/not_planned) + archive, igual ao motor atual.
-# - Adaptação ao alvo (o próprio motor da esteira, em Python): testes = pytest
-#   em tests/ (não Playwright); regra OBRIGATÓRIA de bump de versão em
-#   src/core/version.py embutida na coluna documentacao + verificada no
-#   code-review.
-# - Branch: criada em casos-de-teste (gitevents: create), primeira coluna que
-#   toca no git; planejamento só reescreve o corpo da issue.
-# - Complexidade: um único agente de desenvolvimento (engineering-pl), como no
-#   financeiro. As personas foram enxugadas para exatamente as 5 usadas
-#   (tech-lead, quality, engineering-pl, reviewer, generic). Se um dia quiser o
-#   roteamento por complexidade do escrevas (planning-poker + override-agent
-#   jr/pl/sr via agent-hub), será preciso reintroduzir as personas engineering-sr
-#   e engineering-jr.
-# - Homologação humana: mantida leve (need_human no resumo-entrega), como no
-#   financeiro. Se quiser um portão de homologação real (coluna dedicada com
-#   on_in:[need_human]) antes do merge, é só pedir.
