@@ -110,6 +110,7 @@ boards:
           - Implemente exatamente o que foi solicitado no motor da esteira (`src/`), respeitando a arquitetura hexagonal existente (core/adapters), e cubra os novos códigos com testes em `tests/`.
           - Rode a suíte (`python -m pytest`) e garanta que os testes relacionados passam antes de avançar. Não faça mais do que o escopo pede.
           - Dúvida sobre os casos de teste: devolva ao QA avançando para revisar-caso-de-teste.
+          - Não adicione comentários ao código e se proximo à sua alteração houver comentários, remova-os.
         change:
           advance: execucao-testes
           revisar-caso-de-teste: casos-de-teste
