@@ -187,6 +187,7 @@ boards:
           A issue sem nenhuma relação de bloqueio, liberando quem dependia dela.
         step-prompt: |-
           - Remova todas as relações de bloqueio desta issue, liberando quem dependia dela.
+        on_in: [-need_human]
         on_out: [completed]
         change:
           advance: encerrado
@@ -199,6 +200,7 @@ boards:
         step-prompt: |-
           - Remova todas as relações de bloqueio desta issue.
           - Remova a branch (local e remota), se existir.
+        on_in: [-need_human]
         on_out: [not_planned]
         change:
           advance: encerrado
