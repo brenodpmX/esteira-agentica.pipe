@@ -12,6 +12,10 @@ log:
   ttl: 60
   level: INFO
 
+agent_circuit_break:    # teto de reexecuções por contexto (board, coluna, issue)
+  executions: 4         # N: bloqueia a 5ª execução no mesmo contexto
+  window: 21600         # T: 6h (folga sobre o rerun_cooldown de 30min p/ não camuflar)
+
 git:
   repo:
     main: git@github.com:brenodpmX/esteira-agentica.git
