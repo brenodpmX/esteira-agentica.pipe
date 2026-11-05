@@ -7,6 +7,8 @@ project:
 
 sleep: 1800
 
+agent_timeout_seg: 3600   # timeout de uma execução do agente (s, inteiro > 0); ausente = 3600
+
 log:
   dir: logs
   ttl: 60
@@ -18,6 +20,21 @@ agent_circuit_break:    # teto de reexecuções por contexto (board, coluna, iss
 
 registro:               # registros de execução em .pipe/executionRecords.json (#307)
   retencao_dias: 180    # dias (inteiro > 0); ausente = sem expurgo automático
+
+sync:                   # circuit-breaker de sincronismo (#309); todos os campos opcionais (defaults abaixo)
+  circuit_breaker:
+    persistence: file                  # file (.pipe/syncCircuitBreaker.json) | memory
+    escalation_agent: correcao-esteira # agente dedicado; deve existir em 'agents'
+    issue:
+      max_failures: 3                  # falhas consecutivas para bloquear a issue
+      block_duration: 300              # s de bloqueio da issue
+      max_blocks: 3                    # bloqueios consecutivos antes de escalar ao agente
+    platform:
+      max_blocked_issues: 5            # issues distintas bloqueadas para bloquear a plataforma
+      block_window: 600                # janela (s) para contar as issues bloqueadas
+      block_duration: 900              # s de bloqueio da plataforma
+    half_open:
+      success_threshold: 2             # sucessos em meio-aberto para fechar o circuito
 
 git:
   repo:
@@ -35,6 +52,9 @@ git:
 
 agents:
   kiro-cli:
+    correcao-esteira:
+      name: Agente de Correção da Esteira
+      model: claude-sonnet-5
     tech-lead:
       name: Isabela Gomes - Tech Lead
       model: claude-sonnet-5
