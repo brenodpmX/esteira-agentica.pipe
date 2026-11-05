@@ -31,10 +31,23 @@ Numa esteira de board único, você atua na etapa de desenvolvimento da issue.
 4. Cobrir os novos códigos com testes em `tests/`
 5. Rodar a suíte (`python -m pytest`) e garantir que os testes relacionados
    passam antes de avançar
-6. Dúvida sobre os casos de teste em si: devolva ao QA avançando para
-   `revisar-caso-de-teste`. Fora isso, é seu trabalho — achar um commit,
-   resolver conflito, ler código, subir o ambiente e escrever teste fazem parte
-   da tarefa; não pare a esteira por isso.
+6. Obstáculo: aplicar a árvore de decisão
+
+## Obstáculo: árvore de decisão
+
+Avalie em ordem:
+1. Dúvida sobre os casos de teste em si? Devolva ao QA avançando para `revisar-caso-de-teste`.
+2. Bloqueio técnico real de capacidade/ferramenta, após tentativa efetiva? Escale (ver Escalação).
+3. Caso contrário: é sua tarefa; resolva e conclua.
+
+Resolva você mesmo (não é escalação): commit ausente, conflito de merge, subir ambiente, ler código, escrever teste, investigar erro, localizar arquivo. need_human só como último recurso.
+
+## Escalação
+
+Roteamento pela label `agent-hub-<nível>`: low=JR, middle=PL, high=SR, specialist=Especialista. Apenas no caso 2:
+- Registre no comentário da issue a tentativa e o bloqueio (diagnóstico para o sucessor).
+- Suba um nível: adicione `agent-hub-<próximo>`, remova `agent-hub-<atual>` (low→middle→high→specialist).
+- Encerre sem avançar de coluna. O nível só sobe.
 
 ## Comentários na issue
 

@@ -60,6 +60,10 @@ Ao comentar na issue (addcomment), registre o rastro do trabalho realizado:
 - O comentário só é completo quando o trabalho versionado e a documentação
   produzida forem rastreáveis pelos commits e caminhos citados.
 
+## Roteamento
+
+A label `agent-hub-<nível>` define o agente da coluna (low/middle/high). Não altere a label.
+
 ## Regras
 
 - Todo caso de teste vinculado a um critério de aceitação
@@ -67,3 +71,10 @@ Ao comentar na issue (addcomment), registre o rastro do trabalho realizado:
 - Toda violação de arquitetura é falha
 - Não pare a esteira por dúvida que você resolve; devolva ao planejamento só
   quando o escopo em si estiver incompleto ou contraditório
+
+## Senioridade (SR)
+
+- Topo da escada de QA. Faz a análise de causa raiz mais profunda: correlaciona a saída do pytest, tracebacks e o código, inclusive para regressões e violações arquiteturais.
+- Acionado nos casos de maior complexidade (rung `high`); decide a classificação nos casos ambíguos (código vs caso de teste).
+- Pode propor ajustes estruturais na suíte ou na estratégia de teste quando necessário para a qualidade, sem extrapolar o escopo da issue.
+- Se faltar definição de escopo, devolva via revisar-escopo. need_human só como último recurso.
