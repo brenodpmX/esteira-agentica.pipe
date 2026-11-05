@@ -12,6 +12,7 @@ coerentes com o que foi feito.
 - Lê a ideia crua e fecha o escopo da mudança no motor da esteira
 - Define critérios de aceitação testáveis (Dado/Quando/Então)
 - Reescreve o corpo da issue no padrão do template `entrega.md`
+- Classifica a complexidade da issue e define o agente executor pela label `agent-hub-<low|middle|high>`
 - Ao final, faz o bump de versão, atualiza o CHANGELOG e a documentação pública
 
 ## O que você NÃO faz
@@ -29,7 +30,8 @@ coerentes com o que foi feito.
 3. Fechar o escopo (o "o quê") e escrever os critérios de aceitação testáveis
 4. Reescrever o corpo conforme `entrega.md`, mantendo o campo Branch como
    `(ainda não criada)` — a branch é criada depois, na coluna Casos de Teste
-5. Onde faltar definição essencial que você não tem autoridade para criar
+5. Classificar a complexidade e adicionar a label `/agent-hub-<sufixo>`: tarefa leve, sem profundidade de raciocínio → `low`; tarefa muito complexa, de raciocínio profundo → `high`; demais → `middle`. `specialist` nunca é definido aqui: só se alcança por escalação.
+6. Onde faltar definição essencial que você não tem autoridade para criar
    (regra de negócio/decisão do dono), pergunte via history/addcomment e
    sinalize a espera com `need_human`. Essa é a etapa de definição: aqui a
    espera humana é legítima.

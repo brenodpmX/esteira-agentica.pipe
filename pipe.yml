@@ -58,15 +58,33 @@ agents:
     tech-lead:
       name: Isabela Gomes - Tech Lead
       model: claude-sonnet-5
-    quality:
-      name: Camila Rocha - Engenheira de Qualidade (QA)
+    reviewer-sr:
+      name: Bruno Ferreira - Engenheiro de Software SR
       model: claude-sonnet-5
+    reviewer-pl:
+      name: Sofia Carvalho - Engenheira de Software PL
+      model: auto
+    engineering-sr:
+      name: Bruno Ferreira - Engenheiro de Software SR
+      model: claude-opus-5.5
+    engineering-specialist:
+      name: Otávio Nogueira - Engenheiro de Software Especialista
+      model: claude-opus-5.5
     engineering-pl:
       name: Sofia Carvalho - Engenheira de Software PL
       model: auto
-    reviewer:
-      name: Bruno Ferreira - Engenheiro de Software SR
+    engineering-jr:
+      name: Laura Azevedo - Engenheira de Software JR
+      model: claude-haiku-4.5
+    quality-sr:
+      name: Camila Rocha - Engenheira de Qualidade SR
       model: claude-sonnet-5
+    quality-pl:
+      name: André Tavares - Engenheiro de Qualidade PL
+      model: auto
+    quality-jr:
+      name: Marina Lopes - Engenheira de Qualidade Jr
+      model: claude-haiku-4.5
     generic:
       name: Diego Santos - Analista de Operações
       model: claude-haiku-4.5
@@ -86,6 +104,7 @@ boards:
     columns:
       backlog:
         name: Backlog
+        on_out: [-agent-hub-high, -agent-hub-middle, -agent-hub-low]
         change:
           advance: planejamento
           cancelar: cancelado
@@ -100,13 +119,19 @@ boards:
           - Onde faltar informação essencial para saber o que construir, pergunte pelo history/addcomment e sinalize a espera com `need_human`; não preencha lacunas por suposição.
           - Feche o escopo (o "o quê") e escreva os critérios de aceitação no padrão Dado/Quando/Então, testáveis isoladamente.
           - Reescreva o corpo da issue conforme o template `entrega.md`, refletindo o escopo acordado e os critérios de aceitação; mantenha o campo Branch como `(ainda não criada)` — quem cria a branch é a coluna Casos de Teste.
+          - Pela complexidade da issue, defina o agente que a executa: tarefa leve, sem profundidade de raciocínio → low; tarefa muito complexa, de raciocínio profundo → high; demais → middle. Adicione a label `/agent-hub-<sufixo>` com o sufixo definido [high | low | middle].
           - Não defina detalhes de implementação nem arquitetura, não crie testes, não escreva código. Prefira o simples que resolve — não amplie o escopo além do pedido.
         change:
           advance: casos-de-teste
 
       casos-de-teste:
         name: "Casos de Teste"
-        agent: quality
+        agent: quality-pl
+        agent-hub:
+          low: quality-pl
+          middle: quality-pl
+          high: quality-sr
+          specialist: quality-sr
         gitevents: create
         target-prompt: |-
           Ter os casos de teste da issue completos e fiéis ao escopo — derivados dos critérios de aceitação — prontos para guiar o desenvolvimento.
@@ -122,6 +147,11 @@ boards:
       desenvolvimento:
         name: "Desenvolvimento"
         agent: engineering-pl
+        agent-hub:
+          low: engineering-jr
+          middle: engineering-pl
+          high: engineering-sr
+          specialist: engineering-specialist
         gitevents: use
         target-prompt: |-
           Ter o código da issue entregue conforme o escopo e coberto por testes (pytest), com a suíte passando localmente, pronto para a execução de testes.
@@ -130,6 +160,8 @@ boards:
           - Implemente exatamente o que foi solicitado no motor da esteira (`src/`), respeitando a arquitetura hexagonal existente (core/adapters), e cubra os novos códigos com testes em `tests/`.
           - Rode a suíte (`python -m pytest`) e garanta que os testes relacionados passam antes de avançar. Não faça mais do que o escopo pede.
           - Dúvida sobre os casos de teste: devolva ao QA avançando para revisar-caso-de-teste.
+          - Bloqueio técnico real acima do seu nível, após tentativa: escale. Registre no comentário a tentativa e o bloqueio; suba a label de roteamento (adicione agent-hub-<próximo>, remova agent-hub-<atual>: low->middle->high->specialist); encerre sem avançar. specialist é terminal: se não concluir, need_human como último recurso.
+          - Demais dúvidas técnicas (commit, merge, ambiente, código, teste): resolva; need_human não é caminho para dúvida simples.
           - Não adicione comentários ao código e se proximo à sua alteração houver comentários, remova-os.
         change:
           advance: execucao-testes
@@ -137,7 +169,12 @@ boards:
 
       execucao-testes:
         name: "Execução de Testes"
-        agent: quality
+        agent: quality-pl
+        agent-hub:
+          low: quality-jr
+          middle: quality-pl
+          high: quality-sr
+          specialist: quality-sr
         gitevents: use
         target-prompt: |-
           Ter o veredito de teste da issue registrado — aprovado, reprovado ou parcialmente reprovado — a partir da execução dos casos de teste, sem alterar código nem os próprios casos de teste.
@@ -180,7 +217,12 @@ boards:
 
       code-review:
         name: "Code Review"
-        agent: reviewer
+        agent: reviewer-pl
+        agent-hub:
+          low: reviewer-pl
+          middle: reviewer-sr
+          high: reviewer-sr
+          specialist: reviewer-sr
         target-prompt: |-
           Servir de portão de qualidade antes da integração na main: se aprovado, mudança integrada e branch removida; se reprovado, devolvida ao desenvolvimento com apontamentos claros.
         step-prompt: |-
