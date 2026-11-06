@@ -172,9 +172,9 @@ boards:
         agent: quality-pl
         agent-hub:
           low: quality-jr
-          middle: quality-pl
-          high: quality-sr
-          specialist: quality-sr
+          middle: quality-jr
+          high: quality-pl
+          specialist: quality-pl
         gitevents: use
         target-prompt: |-
           Ter o veredito de teste da issue registrado — aprovado, reprovado ou parcialmente reprovado — a partir da execução dos casos de teste, sem alterar código nem os próprios casos de teste.
@@ -220,7 +220,7 @@ boards:
         agent: reviewer-pl
         agent-hub:
           low: reviewer-pl
-          middle: reviewer-sr
+          middle: reviewer-pl
           high: reviewer-sr
           specialist: reviewer-sr
         target-prompt: |-
